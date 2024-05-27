@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle da Lâmpada</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .lamp-container {
+            width: 100px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .lamp {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: gray;
+            transition: background-color 0.3s;
+        }
+        .button {
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+        .button img {
+            width: 100px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="lamp-container">
+        <div id="lamp" class="lamp"></div>
+    </div>
+    <button id="toggleButton" class="button">
+        <img src="button-image.png" alt="Toggle Light">
+    </button>
+
+    <script>
+        // Função para alternar o estado da lâmpada
+        function toggleLight() {
+            const lamp = document.getElementById('lamp');
+            if (lamp.style.backgroundColor === 'yellow') {
+                lamp.style.backgroundColor = 'gray';
+            } else {
+                lamp.style.backgroundColor = 'yellow';
+            }
+        }
+
+        // Adiciona o evento de clique ao botão
+        document.getElementById('toggleButton').addEventListener('click', toggleLight);
+    </script>
+</body>
+</html>
