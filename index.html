@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle da Lâmpada</title>
+    <title>Desenhar Fios</title>
     <style>
         body {
             display: flex;
@@ -13,73 +13,304 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            position: relative;
         }
-        .lamp-container {
-            width: 300px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
+        #drawingArea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
         }
-        .lamp {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: gray;
-            transition: background-color 0.3s;
-        }
-        .button {
-            cursor: pointer;
-            border: none;
-            background: none;
-            padding: 0;
-        }
-        .button img {
-            width: 300px;
-            height: auto;
-             transform: scaleX(-1); 
-            } .wire {
-            width: 2px;
-            background-color: black;
+        .wire {
             position: absolute;
         }
-        .wire-horizontal {
-            height: 2px;
-            width: 150px;  /* Comprimento do fio horizontal */
-            top: 50%;
-            left: 100%;
+        .selection-rectangle {
+            position: absolute;
+            border: 2px dashed #000;
+            background-color: rgba(0, 0, 0, 0.1);
         }
-        .wire-vertical {
-            height: 200px;  /* Comprimento do fio vertical */
-            width: 2px;
-            top: -200px; /* Posicionamento vertical */
+        #toggleColorButton, #wireWidthButton, #lampButton, #resetButton, #undoButton {
+            position: fixed;
+            top: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        #toggleColorButton {
+            left: 10px;
+        }
+        #wireWidthButton {
+            left: 120px;
+        }
+        #lampButton {
+            left: 230px;
+            cursor: grab;
+        }
+        #resetButton {
+            left: 340px;
+        }
+        #undoButton {
+            left: 450px;
+        }
+        #wireWidthContainer {
+            display: none;
+            position: fixed;
+            top: 50px;
+            left: 120px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        #wireWidthContainer label {
+            color: white;
+        }
+        #lamp {
+            position: fixed;
+            top: 100px;
             left: 50%;
-       
+            transform: translateX(-50%);
+            width: 50px;
+            height: 100px;
+            background-color: #333;
+            border-radius: 25px 25px 0 0;
+            cursor: grab;
+        }
+        .draggable-textbox {
+            position: fixed;
+            top: 200px;
+            left: 50px;
+            width: 150px;
+            padding: 5px;
+            z-index: 10;
+            cursor: grab;
+            border: 1px solid #333;
+            background-color: #ccc;
+        }
+        .draggable-textbox:nth-child(2) {
+            top: 300px;
+            left: 50px;
+        }
+        .draggable-textbox:nth-child(3) {
+            top: 400px;
+            left: 50px;
+        }
+        #cursorCircle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <div class="lamp-container">
-        <div id="lamp" class="lamp"></div>
+    <button id="toggleColorButton">Trocar Cor</button>
+    <button id="wireWidthButton">Largura do Fio</button>
+    <button id="lampButton">Lâmpada</button>
+    <button id="resetButton">Resetar</button>
+    <button id="undoButton">Voltar</button>
+    <div id="wireWidthContainer">
+        <label for="wireWidth">Largura do Fio:</label>
+        <input type="range" id="wireWidth" name="wireWidth" min="1" max="10" value="2">
     </div>
-    <button id="toggleButton" class="button">
-        <img src="button-image.png" alt="Toggle Light">
-    </button>
+    <div id="drawingArea"></div>
+    <div id="lamp"></div>
+    <input type="text" class="draggable-textbox" value="Caixa de texto 1">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 2">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 3">
+    <div id="cursorCircle"></div>
 
     <script>
-        // Função para alternar o estado da lâmpada
-        function toggleLight() {
-            const lamp = document.getElementById('lamp');
-            if (lamp.style.backgroundColor === 'yellow') {
-                lamp.style.backgroundColor = 'gray';
+        let drawing = false;
+        let selecting = false;
+        let startX, startY;
+        let wireColor = 'black';  // Cor inicial
+        let wireWidth = 2;
+        let lampOn = false;
+        const colors = ['black', 'blue', 'green'];
+        const drawingArea = document.getElementById('drawingArea');
+        const toggleColorButton = document.getElementById('toggleColorButton');
+        const wireWidthButton = document.getElementById('wireWidthButton');
+        const wireWidthContainer = document.getElementById('wireWidthContainer');
+        const lampButton = document.getElementById('lampButton');
+        const resetButton = document.getElementById('resetButton');
+        const undoButton = document.getElementById('undoButton');
+        const lamp = document.getElementById('lamp');
+        const cursorCircle = document.getElementById('cursorCircle');
+        let selectedLines = [];
+        let selectionRectangle = null;
+        let actions = [];
+
+        toggleColorButton.addEventListener('click', () => {
+            const currentColorIndex = colors.indexOf(wireColor);
+            wireColor = colors[(currentColorIndex + 1) % colors.length];
+            toggleColorButton.style.backgroundColor = wireColor;
+            toggleColorButton.style.color = wireColor === 'black' ? '#ffffff' : '#000000';
+        });
+
+        wireWidthButton.addEventListener('click', () => {
+            if (wireWidthContainer.style.display === 'none') {
+                wireWidthContainer.style.display = 'block';
             } else {
-                lamp.style.backgroundColor = 'yellow';
+                wireWidthContainer.style.display = 'none';
             }
+        });
+
+        lampButton.addEventListener('click', () => {
+            lampOn = !lampOn;
+            lamp.style.backgroundColor = lampOn ? 'yellow' : '#333';
+        });
+
+        resetButton.addEventListener('click', () => {
+            drawingArea.innerHTML = '';
+            actions = [];
+        });
+
+        undoButton.addEventListener('click', () => {
+            if (actions.length > 0) {
+                const lastAction = actions.pop();
+                lastAction.remove();
+            }
+        });
+
+        document.getElementById('wireWidth').addEventListener('input', (e) => {
+            wireWidth = e.target.value;
+        });
+
+        drawingArea.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { // Botão esquerdo do mouse
+                drawing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            } else if (e.button === 2) { // Botão direito do mouse
+                e.preventDefault();
+                selecting = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                selectionRectangle = document.createElement('div');
+                selectionRectangle.classList.add('selection-rectangle');
+                selectionRectangle.style.left = `${startX}px`;
+                selectionRectangle.style.top = `${startY}px`;
+                drawingArea.appendChild(selectionRectangle);
+            }
+        });
+
+        drawingArea.addEventListener('mousemove', (e) => {
+            if (selecting && selectionRectangle) {
+                const currentX = e.clientX;
+                const currentY = e.clientY;
+                selectionRectangle.style.width = `${Math.abs(currentX - startX)}px`;
+                selectionRectangle.style.height = `${Math.abs(currentY - startY)}px`;
+                selectionRectangle.style.left = `${Math.min(startX, currentX)}px`;
+                selectionRectangle.style.top = `${Math.min(startY, currentY)}px`;
+            }
+        });
+
+        drawingArea.addEventListener('mouseup', (e) => {
+            if (drawing && e.button === 0) {
+                drawing = false;
+                const endX = e.clientX;
+                const endY = e.clientY;
+
+                const wire = document.createElement('div');
+                wire.classList.add('wire');
+                wire.style.backgroundColor = wireColor;
+
+                const deltaX = endX - startX;
+                const deltaY = endY - startY;
+
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    wire.style.height = `${wireWidth}px`;
+                    wire.style.width = `${Math.abs(deltaX)}px`;
+                    wire.style.left = `${deltaX > 0 ? startX : endX}px`;
+                    wire.style.top = `${startY - wireWidth / 2}px`;
+                } else {
+                    wire.style.width = `${wireWidth}px`;
+                    wire.style.height = `${Math.abs(deltaY)}px`;
+                    wire.style.left = `${startX - wireWidth / 2}px`;
+                    wire.style.top = `${deltaY > 0 ? startY : endY}px`;
+                }
+
+                wire.addEventListener('dblclick', () => {
+                    wire.remove();
+                });
+
+                wire.addEventListener('mousemove', (e) => {
+                    cursorCircle.style.backgroundColor = wire.style.backgroundColor;
+                    cursorCircle.style.display = 'block';
+                });
+
+                wire.addEventListener('mouseout', () => {
+                    cursorCircle.style.display = 'none';
+                });
+
+                drawingArea.appendChild(wire);
+                actions.push(wire);
+            } else if (selecting && e.button === 2) {
+                selecting = false;
+                if (selectionRectangle) {
+                    const rect = selectionRectangle.getBoundingClientRect();
+                    selectedLines = Array.from(document.querySelectorAll('.wire')).filter(wire => {
+                        const wireRect = wire.getBoundingClientRect();
+                        return !(rect.right < wireRect.left || rect.left > wireRect.right || rect.bottom < wireRect.top || rect.top > wireRect.bottom);
+                    });
+                    selectionRectangle.remove();
+                    selectionRectangle = null;
+                }
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            cursorCircle.style.left = `${e.clientX - cursorCircle.offsetWidth / 2}px`;
+            cursorCircle.style.top = `${e.clientY - cursorCircle.offsetHeight / 2}px`;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete') {
+                selectedLines.forEach(line => line.remove());
+                selectedLines = [];
+            }
+        });
+
+        // Função para tornar um elemento arrastável
+        function makeDraggable(element) {
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            element.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - element.getBoundingClientRect().left;
+                offsetY = e.clientY - element.getBoundingClientRect().top;
+                element.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    element.style.left = `${e.clientX - offsetX}px`;
+                    element.style.top = `${e.clientY - offsetY}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                }
+            });
         }
 
-        // Adiciona o evento de clique ao botão
-        document.getElementById('toggleButton').addEventListener('click', toggleLight);
+        // Tornar o botão lâmpada, a lâmpada e as caixas de texto arrastáveis
+        makeDraggable(lampButton);
+        makeDraggable(lamp);
+        document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
     </script>
 </body>
 </html>
