@@ -77,6 +77,17 @@
             background-size: cover;
             cursor: grab;
         }
+        #lampButton {
+            position: fixed;
+            top: 10px;
+            left: 450px;
+            width: 50px;
+            height: 50px;
+            background-image: url('botao.jpg');
+            background-size: cover;
+            cursor: pointer;
+            z-index: 10;
+        }
         .draggable-textbox {
             position: fixed;
             top: 200px;
@@ -118,6 +129,7 @@
     </div>
     <div id="drawingArea"></div>
     <div id="lamp"></div>
+    <div id="lampButton"></div>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
     <input type="text" class="draggable-textbox" value="Caixa de texto 3">
@@ -136,6 +148,7 @@
         const wireWidthButton = document.getElementById('wireWidthButton');
         const wireWidthContainer = document.getElementById('wireWidthContainer');
         const lamp = document.getElementById('lamp');
+        const lampButton = document.getElementById('lampButton');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
         const cursorCircle = document.getElementById('cursorCircle');
@@ -158,7 +171,7 @@
             }
         });
 
-        lamp.addEventListener('click', () => {
+        lampButton.addEventListener('click', () => {
             lampOn = !lampOn;
             lamp.style.backgroundImage = lampOn ? 'url("lampada-acesa.jpg")' : 'url("lampada-apagada.jpg")';
         });
@@ -237,73 +250,4 @@
                     wire.remove();
                 });
 
-                wire.addEventListener('mousemove', (e) => {
-                    cursorCircle.style.backgroundColor = wire.style.backgroundColor;
-                    cursorCircle.style.display = 'block';
-                });
-
-                wire.addEventListener('mouseout', () => {
-                    cursorCircle.style.display = 'none';
-                });
-
-                drawingArea.appendChild(wire);
-                actions.push(wire);
-            } else if (selecting && e.button === 2) {
-                selecting = false;
-                if (selectionRectangle) {
-                    const rect = selectionRectangle.getBoundingClientRect();
-                    selectedLines = Array.from(document.querySelectorAll('.wire')).filter(wire => {
-                        const wireRect = wire.getBoundingClientRect();
-                        return !(rect.right < wireRect.left || rect.left > wireRect.right || rect.bottom < wireRect.top || rect.top > wireRect.bottom);
-                    });
-                    selectionRectangle.remove();
-                    selectionRectangle = null;
-                }
-            }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            cursorCircle.style.left = `${e.clientX - cursorCircle.offsetWidth / 2}px`;
-            cursorCircle.style.top = `${e.clientY - cursorCircle.offsetHeight / 2}px`;
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Delete') {
-                selectedLines.forEach(line => line.remove());
-                selectedLines = [];
-            }
-        });
-
-        // Função para tornar um elemento arrastável
-        function makeDraggable(element) {
-            let isDragging = false;
-            let offsetX, offsetY;
-
-            element.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                offsetX = e.clientX - element.getBoundingClientRect().left;
-                offsetY = e.clientY - element.getBoundingClientRect().top;
-                element.style.cursor = 'grabbing';
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    element.style.left = `${e.clientX - offsetX}px`;
-                    element.style.top = `${e.clientY - offsetY}px`;
-                }
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    element.style.cursor = 'grab';
-                }
-            });
-        }
-
-        // Tornar o botão lâmpada, a lâmpada e as caixas de texto arrastáveis
-        makeDraggable(lamp);
-        document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
-    </script>
-</body>
-</html>
+                wire.addEventListener('mousemove', (e) =>
