@@ -31,7 +31,7 @@
             border: 2px dashed #000;
             background-color: rgba(0, 0, 0, 0.1);
         }
-        #toggleColorButton, #wireWidthButton, #lampButton, #resetButton, #undoButton {
+        #toggleColorButton, #wireWidthButton, #resetButton, #undoButton {
             position: fixed;
             top: 10px;
             background-color: #333;
@@ -47,15 +47,11 @@
         #wireWidthButton {
             left: 120px;
         }
-        #lampButton {
-            left: 230px;
-            cursor: grab;
-        }
         #resetButton {
-            left: 340px;
+            left: 230px;
         }
         #undoButton {
-            left: 450px;
+            left: 340px;
         }
         #wireWidthContainer {
             display: none;
@@ -77,8 +73,8 @@
             transform: translateX(-50%);
             width: 50px;
             height: 100px;
-            background-color: #333;
-            border-radius: 25px 25px 0 0;
+            background-image: url('lampada-apagada.jpg'); /* Inicialmente apagada */
+            background-size: cover;
             cursor: grab;
         }
         .draggable-textbox {
@@ -114,7 +110,6 @@
 <body>
     <button id="toggleColorButton">Trocar Cor</button>
     <button id="wireWidthButton">Largura do Fio</button>
-    <button id="lampButton">Lâmpada</button>
     <button id="resetButton">Resetar</button>
     <button id="undoButton">Voltar</button>
     <div id="wireWidthContainer">
@@ -140,10 +135,9 @@
         const toggleColorButton = document.getElementById('toggleColorButton');
         const wireWidthButton = document.getElementById('wireWidthButton');
         const wireWidthContainer = document.getElementById('wireWidthContainer');
-        const lampButton = document.getElementById('lampButton');
+        const lamp = document.getElementById('lamp');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
-        const lamp = document.getElementById('lamp');
         const cursorCircle = document.getElementById('cursorCircle');
         let selectedLines = [];
         let selectionRectangle = null;
@@ -164,9 +158,9 @@
             }
         });
 
-        lampButton.addEventListener('click', () => {
+        lamp.addEventListener('click', () => {
             lampOn = !lampOn;
-            lamp.style.backgroundColor = lampOn ? 'yellow' : '#333';
+            lamp.style.backgroundImage = lampOn ? 'url("lampada-acesa.jpg")' : 'url("lampada-apagada.jpg")';
         });
 
         resetButton.addEventListener('click', () => {
@@ -308,7 +302,6 @@
         }
 
         // Tornar o botão lâmpada, a lâmpada e as caixas de texto arrastáveis
-        makeDraggable(lampButton);
         makeDraggable(lamp);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
     </script>
