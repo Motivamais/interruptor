@@ -171,7 +171,8 @@
 
         lampButton.addEventListener('click', () => {
             lampOn = !lampOn;
-            lamp.style.backgroundColor = lampOn ? 'yellow' : '#333';
+            lamp.style.backgroundColor = lampOn ? "url('lamp-on.png') no-repeat center center" : "url('images/lamp-off.png') no-repeat center center";
+            lampButton.style.backgroundSize = 'cover';
         });
 
         resetButton.addEventListener('click', () => {
