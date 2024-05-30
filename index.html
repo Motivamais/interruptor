@@ -50,11 +50,11 @@
         #lampButton {
             left: 230px;
             cursor: grab;
-             background: url(button-image.png) no-repeat center center;
-    background-size: cover;
-    width: 300px;
-    height: 300px;
-    text-indent: -9999px;
+            background: url(button-image.png) no-repeat center center;
+            background-size: cover;
+            width: 300px;
+            height: 300px;
+            text-indent: -9999px;
         }
         #resetButton {
             left: 340px;
@@ -120,7 +120,7 @@
     <button id="toggleColorButton">Trocar Cor</button>
     <button id="wireWidthButton">Largura do Fio</button>
     <button id="lampButton">Lâmpada</button>
-    <img id="lampImage" src="lamp-off.png" alt="Lâmpada" style="display:none;">
+    <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
     <button id="resetButton">Resetar</button>
     <button id="undoButton">Voltar</button>
     <div id="wireWidthContainer">
@@ -173,8 +173,7 @@
 
         lampButton.addEventListener('click', () => {
             lampOn = !lampOn;
-            lamp.style.backgroundColor = lampOn ?'lamp-on.png' : 'lamp-off.png';
-             lampImage.style.display = 'block';
+            lampImage.src = lampOn ? 'lamp-on.png' : 'lamp-off.png';
         });
 
         resetButton.addEventListener('click', () => {
