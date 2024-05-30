@@ -31,7 +31,7 @@
             border: 2px dashed #000;
             background-color: rgba(0, 0, 0, 0.1);
         }
-        #toggleColorButton, #wireWidthButton, #lampButton, #resetButton, #undoButton {
+        #toggleColorButton, #wireWidthButton, #resetButton, #undoButton {
             position: fixed;
             top: 10px;
             background-color: #333;
@@ -47,29 +47,11 @@
         #wireWidthButton {
             left: 120px;
         }
-        #lampButton {
-            left: 230px;
-            cursor: grab;
-            background: url(button-image.png) no-repeat center center;
-            background-size: cover;
-            width: 200px;
-            height: 200px;
-            text-indent: -9999px;
-        }
-        #lampImage {
-            position: fixed;
-            top: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 150px;
-            cursor: grab;
-        }
         #resetButton {
-            left: 340px;
+            left: 230px;
         }
         #undoButton {
-            left: 450px;
+            left: 340px;
         }
         #wireWidthContainer {
             display: none;
@@ -83,6 +65,15 @@
         }
         #wireWidthContainer label {
             color: white;
+        }
+        #lampImage {
+            position: fixed;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 150px;
+            cursor: grab;
         }
         .draggable-textbox {
             position: fixed;
@@ -117,8 +108,6 @@
 <body>
     <button id="toggleColorButton">Trocar Cor</button>
     <button id="wireWidthButton">Largura do Fio</button>
-    <button id="lampButton">Lâmpada</button>
-    <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
     <button id="resetButton">Resetar</button>
     <button id="undoButton">Voltar</button>
     <div id="wireWidthContainer">
@@ -126,6 +115,7 @@
         <input type="range" id="wireWidth" name="wireWidth" min="1" max="10" value="2">
     </div>
     <div id="drawingArea"></div>
+    <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
     <input type="text" class="draggable-textbox" value="Caixa de texto 3">
@@ -143,7 +133,6 @@
         const toggleColorButton = document.getElementById('toggleColorButton');
         const wireWidthButton = document.getElementById('wireWidthButton');
         const wireWidthContainer = document.getElementById('wireWidthContainer');
-        const lampButton = document.getElementById('lampButton');
         const lampImage = document.getElementById('lampImage');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
@@ -167,7 +156,7 @@
             }
         });
 
-        lampButton.addEventListener('click', () => {
+        lampImage.addEventListener('click', () => {
             lampOn = !lampOn;
             lampImage.src = lampOn ? 'lamp-on.png' : 'lamp-off.png';
         });
@@ -310,8 +299,7 @@
             });
         }
 
-        // Tornar o botão lâmpada, a lâmpada e as caixas de texto arrastáveis
-        makeDraggable(lampButton);
+        // Tornar a lâmpada e as caixas de texto arrastáveis
         makeDraggable(lampImage);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
     </script>
