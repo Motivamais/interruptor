@@ -75,6 +75,18 @@
             height: 150px;
             cursor: grab;
         }
+        #lampButton {
+            position: fixed;
+            top: 320px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            background: url('button-image.png') no-repeat center center;
+            background-size: cover;
+            border: none;
+            cursor: grab;
+        }
         .draggable-textbox {
             position: fixed;
             top: 200px;
@@ -116,6 +128,7 @@
     </div>
     <div id="drawingArea"></div>
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
+    <button id="lampButton"></button>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
     <input type="text" class="draggable-textbox" value="Caixa de texto 3">
@@ -136,6 +149,7 @@
         const lampImage = document.getElementById('lampImage');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
+        const lampButton = document.getElementById('lampButton');
         const cursorCircle = document.getElementById('cursorCircle');
         let selectedLines = [];
         let selectionRectangle = null;
@@ -156,7 +170,7 @@
             }
         });
 
-        lampImage.addEventListener('click', () => {
+        lampButton.addEventListener('click', () => {
             lampOn = !lampOn;
             lampImage.src = lampOn ? 'lamp-on.png' : 'lamp-off.png';
         });
@@ -299,8 +313,9 @@
             });
         }
 
-        // Tornar a lâmpada e as caixas de texto arrastáveis
+        // Tornar a lâmpada, o botão e as caixas de texto arrastáveis
         makeDraggable(lampImage);
+        makeDraggable(lampButton);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
     </script>
 </body>
