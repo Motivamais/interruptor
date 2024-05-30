@@ -120,7 +120,7 @@
     <button id="toggleColorButton">Trocar Cor</button>
     <button id="wireWidthButton">Largura do Fio</button>
     <button id="lampButton">Lâmpada</button>
-     <script src="script.js"></script>
+    <img id="lampImage" src="lamp-off.png" alt="Lâmpada" style="display:none;">
     <button id="resetButton">Resetar</button>
     <button id="undoButton">Voltar</button>
     <div id="wireWidthContainer">
@@ -172,7 +172,8 @@
 
         lampButton.addEventListener('click', () => {
             lampOn = !lampOn;
-            lamp.style.backgroundColor = lampOn ?"url('images/teste/lamp-on.png') no-repeat center center" : "url('images/teste/lamp-off.png') no-repeat center center";
+            lamp.style.backgroundColor = lampOn ?'lamp-on.png' : 'lamp-off.png';
+             lampImage.style.display = 'block';
         });
 
         resetButton.addEventListener('click', () => {
