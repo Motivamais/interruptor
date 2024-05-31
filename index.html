@@ -322,6 +322,13 @@
         makeDraggable(lampImage);
         makeDraggable(lampButton);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
+
+        // Adicionar listener para mouseup no documento para parar o desenho ao soltar o botão do mouse fora da área de desenho
+        document.addEventListener('mouseup', (e) => {
+            if (drawing && e.button === 0) {
+                drawing = false;
+            }
+        });
     </script>
 </body>
 </html>
