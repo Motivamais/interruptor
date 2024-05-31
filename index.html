@@ -26,7 +26,7 @@
         }
         .wire {
             position: absolute;
-            z-index: 2;
+            z-index: 4; /* Ajuste para garantir que as linhas fiquem acima dos elementos */
         }
         .selection-rectangle {
             position: absolute;
@@ -297,10 +297,12 @@
             let offsetX, offsetY;
 
             element.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                offsetX = e.clientX - element.getBoundingClientRect().left;
-                offsetY = e.clientY - element.getBoundingClientRect().top;
-                element.style.cursor = 'grabbing';
+                if (e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
+                    isDragging = true;
+                    offsetX = e.clientX - element.getBoundingClientRect().left;
+                    offsetY = e.clientY - element.getBoundingClientRect().top;
+                    element.style.cursor = 'grabbing';
+                }
             });
 
             document.addEventListener('mousemove', (e) => {
