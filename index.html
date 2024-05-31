@@ -22,14 +22,17 @@
             width: 100%;
             height: 100%;
             cursor: crosshair;
+            z-index: 1;
         }
         .wire {
             position: absolute;
+            z-index: 2;
         }
         .selection-rectangle {
             position: absolute;
             border: 2px dashed #000;
             background-color: rgba(0, 0, 0, 0.1);
+            z-index: 2;
         }
         #toggleColorButton, #wireWidthButton, #resetButton, #undoButton {
             position: fixed;
@@ -60,40 +63,42 @@
             left: 120px;
             background-color: #333;
             padding: 10px;
-            border-radius: 500px;
+            border-radius: 5px;
             z-index: 10;
         }
         #wireWidthContainer label {
             color: white;
         }
         #lampImage {
-            position: fixed;
+            position: absolute;
             top: 150px;
             left: 50%;
-            transform: translateX(0%);
+            transform: translateX(-50%);
             width: 150px;
             height: 150px;
             cursor: grab;
+            z-index: 3;
         }
         #lampButton {
-            position: fixed;
+            position: absolute;
             top: 50px;
             left: 50%;
-            transform: translateX(0%)scaleX(-1);
+            transform: translateX(-50%) scaleX(-1);
             width: 300px;
             height: 300px;
             background: url('button-image.png') no-repeat center center;
             background-size: cover;
             border: none;
             cursor: grab;
+            z-index: 3;
         }
         .draggable-textbox {
-            position: fixed;
+            position: absolute;
             top: 200px;
             left: 50px;
             width: 150px;
             padding: 5px;
-            z-index: 10;
+            z-index: 3;
             cursor: grab;
             border: 1px solid #333;
             background-color: #ccc;
