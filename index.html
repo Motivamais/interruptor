@@ -73,7 +73,7 @@
             position: absolute;
             top: 150px;
             left: 50%;
-            transform: translateX(0%);
+            transform: translateX(-50%);
             width: 150px;
             height: 150px;
             cursor: grab;
@@ -83,11 +83,9 @@
             position: absolute;
             top: 50px;
             left: 50%;
-            transform: translateX(0%) scaleX(-1);
+            transform: translateX(-50%);
             width: 300px;
             height: 300px;
-            background: url('button-image.png') no-repeat center center;
-            background-size: cover;
             border: none;
             cursor: grab;
             z-index: 3;
@@ -111,15 +109,6 @@
             top: 400px;
             left: 50px;
         }
-        #cursorCircle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            pointer-events: none;
-            display: none;
-            z-index: 1000;
-        }
     </style>
 </head>
 <body>
@@ -133,11 +122,10 @@
     </div>
     <div id="drawingArea"></div>
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
-    <button id="lampButton"></button>
+    <button id="lampButton"><img src="button-image.png" alt="Botão"></button>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
     <input type="text" class="draggable-textbox" value="Caixa de texto 3">
-    <div id="cursorCircle"></div>
 
     <script>
         let drawing = false;
@@ -155,7 +143,6 @@
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
         const lampButton = document.getElementById('lampButton');
-        const cursorCircle = document.getElementById('cursorCircle');
         let selectedLines = [];
         let selectionRectangle = null;
         let actions = [];
@@ -254,15 +241,6 @@
                     wire.remove();
                 });
 
-                wire.addEventListener('mousemove', (e) => {
-                    cursorCircle.style.backgroundColor = wire.style.backgroundColor;
-                    cursorCircle.style.display = 'block';
-                });
-
-                wire.addEventListener('mouseout', () => {
-                    cursorCircle.style.display = 'none';
-                });
-
                 drawingArea.appendChild(wire);
                 actions.push(wire);
             } else if (selecting && e.button === 2) {
@@ -280,8 +258,10 @@
         });
 
         document.addEventListener('mousemove', (e) => {
-            cursorCircle.style.left = `${e.clientX - cursorCircle.offsetWidth / 2}px`;
-            cursorCircle.style.top = `${e.clientY - cursorCircle.offsetHeight / 2}px`;
+            if (drawing) {
+                // Prevenção de comportamento estranho ao desenhar
+                e.preventDefault();
+            }
         });
 
         document.addEventListener('keydown', (e) => {
