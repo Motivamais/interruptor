@@ -259,6 +259,9 @@
         let dragStartX, dragStartY;
         let continuousLineMode = false;
         let treeway1ButtonRotated = false;
+        let treeway1Image1Rotated = false;
+        let treeway1Image2Rotated = false;
+
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2];
@@ -336,14 +339,14 @@
 
         treeway1Image1.addEventListener('click', () => {
             treeway1ButtonRotated = !treeway1ButtonRotated;
-            treeway1Image1.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
-            treeway1Image2.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
+            treeway1Image1.style.transform = treeway1ButtonRotated ? 'rotatex(180deg)' : 'rotatex(0deg)';
+            
         });
 
         treeway1Image2.addEventListener('click', () => {
-            treeway1ButtonRotated = !treeway1ButtonRotated;
-            treeway1Image1.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
-            treeway1Image2.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
+            treeway1Image2Rotated = !treeway1Image2Rotated;
+            treeway1Image2.style.transform = treeway1Image2Rotated ? 'rotatex(180deg)' : 'rotatex(0deg)';
+            toggleLamp();
         });
 
         toggleDraggableButton.addEventListener('click', () => {
