@@ -202,6 +202,8 @@
         let currentWire = null;
         let firstClickElement = null;
         let menuOpen = false;
+        let isDraggingLine = false;
+        let dragStartX, dragStartY;
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage];
@@ -282,7 +284,22 @@
                 if (firstClickElement) {
                     secondClick(e);
                 } else {
-                    firstClick(e);
+                    if (e.shiftKey) {
+                        // Inicia o arrasto para desenhar uma linha reta
+                        isDraggingLine = true;
+                        dragStartX = e.clientX;
+                        dragStartY = e.clientY;
+
+                        currentWire = document.createElement('div');
+                        currentWire.classList.add('wire');
+                        currentWire.style.backgroundColor = wireColor;
+                        currentWire.style.position = 'absolute';
+                        currentWire.style.left = `${dragStartX}px`;
+                        currentWire.style.top = `${dragStartY}px`;
+                        drawingArea.appendChild(currentWire);
+                    } else {
+                        firstClick(e);
+                    }
                 }
             } else if (e.button === 2) { // Botão direito do mouse
                 e.preventDefault();
@@ -322,6 +339,13 @@
                 selectionRectangle.style.height = `${Math.abs(currentY - startY)}px`;
                 selectionRectangle.style.left = `${Math.min(startX, currentX)}px`;
                 selectionRectangle.style.top = `${Math.min(startY, currentY)}px`;
+            } else if (isDraggingLine && currentWire) {
+                const currentX = e.clientX;
+                const currentY = e.clientY;
+                currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
+                currentWire.style.height = `${wireWidth}px`;
+                currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
+                currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
             }
         });
 
@@ -341,6 +365,10 @@
                     selectionRectangle.remove();
                     selectionRectangle = null;
                 }
+            } else if (isDraggingLine && e.button === 0) {
+                isDraggingLine = false;
+                actions.push(currentWire);
+                currentWire = null;
             }
         });
 
