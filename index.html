@@ -261,6 +261,8 @@
         let treeway1ButtonRotated = false;
         let treeway1Image1Rotated = false;
         let treeway1Image2Rotated = false;
+        let treeway1Image1LampOn = false;
+        let treeway1Image2LampOn = false;
 
 
         // Definindo variáveis para os elementos e seus z-indices originais
@@ -286,10 +288,10 @@
         });
 
         elementList.addEventListener('click', (e) => {
-            if (e.target.tagName === 'LI') {
-                const elementId = e.target.getAttribute('data-element');
-                const element = document.getElementById(elementId);
-                element.style.display = element.style.display === 'none' ? 'block' : 'none';
+    if (e.target.tagName === 'LI') {
+        const elementId = e.target.getAttribute('data-element');
+        const element = document.getElementById(elementId);
+        element.style.display = element.style.display === 'none' ? 'block' : 'none';
             }
         });
 
@@ -340,14 +342,26 @@
         treeway1Image1.addEventListener('click', () => {
             treeway1ButtonRotated = !treeway1ButtonRotated;
             treeway1Image1.style.transform = treeway1ButtonRotated ? 'rotatex(180deg)' : 'rotatex(0deg)';
-            toggleLamp();
+            treeway1Image1LampOn = !treeway1Image1LampOn;
+            toggleLamp(treeway1Image1LampOn, lampImage, lampImageOn);
         });
 
         treeway1Image2.addEventListener('click', () => {
             treeway1Image2Rotated = !treeway1Image2Rotated;
             treeway1Image2.style.transform = treeway1Image2Rotated ? 'rotatex(180deg)' : 'rotatex(0deg)';
-            toggleLamp();
+            treeway1Image2LampOn = !treeway1Image2LampOn;
+            toggleLamp(treeway1Image2LampOn, lampImage, lampImageOn);
         });
+        function toggleLamp(isOn, lampImage, lampImageOn) {
+    if (isOn) {
+        lampImageOn.style.display = 'block';
+        lampImage.style.display = 'none';
+    } else {
+        lampImage.style.display = 'block';
+        lampImageOn.style.display = 'none';
+    }
+}
+
 
         toggleDraggableButton.addEventListener('click', () => {
             draggable = !draggable;
