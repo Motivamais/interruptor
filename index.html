@@ -175,6 +175,9 @@
         let selectionRectangle = null;
         let actions = [];
 
+        let elements = [lampButton, lampImage, lampImageOn, bocalImage];
+        let originalZIndices = elements.map(el => el.style.zIndex);
+
         toggleColorButton.addEventListener('click', () => {
             const currentColorIndex = colors.indexOf(wireColor);
             wireColor = colors[(currentColorIndex + 1) % colors.length];
@@ -212,6 +215,12 @@
             document.querySelectorAll('.draggable-textbox').forEach(element => {
                 element.style.cursor = cursorStyle;
             });
+
+            if (!draggable) {
+                elements.forEach(el => el.style.zIndex = 0);
+            } else {
+                elements.forEach((el, index) => el.style.zIndex = originalZIndices[index]);
+            }
         });
 
         resetButton.addEventListener('click', () => {
