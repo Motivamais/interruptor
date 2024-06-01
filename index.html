@@ -293,9 +293,8 @@
                         currentWire = document.createElement('div');
                         currentWire.classList.add('wire');
                         currentWire.style.backgroundColor = wireColor;
+                        currentWire.style.height = `${wireWidth}px`;
                         currentWire.style.position = 'absolute';
-                        currentWire.style.left = `${dragStartX}px`;
-                        currentWire.style.top = `${dragStartY}px`;
                         drawingArea.appendChild(currentWire);
                     } else {
                         firstClick(e);
