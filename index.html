@@ -91,25 +91,25 @@
             z-index: 4;    /* Colocado acima da lâmpada apagada */
             top: 150px;
             left: 50%;
-            transform: translateX(0%);
+            transform: translateX(-50%);
         }
         #bocalImage {
             top: 350px;
             left: 50%;
-            transform: translateX(0%);
+            transform: translateX(-50%);
         }
         #lampButton {
             position: absolute;
             top: 50px;
             left: 50%;
-            transform: translateX(0%) scaleX(-1);
+            transform: translateX(-50%) scaleX(-1);
             width: 300px;
             height: 300px;
             background: url('button-image.png') no-repeat center center;
             background-size: cover;
             border: none;
             cursor: grab;
-            z-index: 0;
+            z-index: 3;
         }
         .draggable-textbox {
             position: absolute;
@@ -205,7 +205,7 @@
 
         toggleDraggableButton.addEventListener('click', () => {
             draggable = !draggable;
-            const cursorStyle = draggable ? 'grab' : 'default';
+            const cursorStyle = draggable ? 'grab' : 'crosshair';
             lampImage.style.cursor = cursorStyle;
             lampImageOn.style.cursor = cursorStyle;
             bocalImage.style.cursor = cursorStyle;
