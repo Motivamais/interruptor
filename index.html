@@ -97,7 +97,7 @@
         #lampImage {
             top: 150px;
             left: 50%;
-            transform: translateX(0%) scaleY(-1);
+            transform: translateX(-50%) scaleY(-1);
         }
         /* Posição inicial da lâmpada acesa */
         #lampImageOn {
@@ -105,23 +105,23 @@
             z-index: 4;    /* Colocado acima da lâmpada apagada */
             top: 150px;
             left: 50%;
-            transform: translateX(0%) scaleY(-1);
+            transform: translateX(-50%) scaleY(-1);
         }
         #bocalImage {
             top: 350px;
             left: 50%;
-            transform: translateX(0%);
+            transform: translateX(-50%);
         }
         #disjuntorImage {
             top: 500px;
             left: 50%;
-            transform: translateX(0%);
+            transform: translateX(-50%);
         }
         #lampButton {
             position: absolute;
             top: 50px;
             left: 50%;
-            transform: translateX(0%) scaleX(-1);
+            transform: translateX(-50%) scaleX(-1);
             width: 300px;
             height: 300px;
             background: url('button-image.png') no-repeat center center;
@@ -170,6 +170,7 @@
         <a id="resetButton">Resetar</a>
         <a id="undoButton">Voltar</a>
         <a id="toggleDraggableButton">Arrastável</a>
+        <a id="continuousLineButton">Linha Contínua</a>
     </div>
     <div id="drawingArea"></div>
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
@@ -205,6 +206,7 @@
         const undoButton = document.getElementById('undoButton');
         const lampButton = document.getElementById('lampButton');
         const toggleDraggableButton = document.getElementById('toggleDraggableButton');
+        const continuousLineButton = document.getElementById('continuousLineButton');
         let selectedLines = [];
         let selectionRectangle = null;
         let actions = [];
@@ -213,6 +215,7 @@
         let menuOpen = false;
         let isDraggingLine = false;
         let dragStartX, dragStartY;
+        let continuousLineMode = false;
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage];
@@ -224,6 +227,12 @@
             } else {
                 openMenu();
             }
+        });
+
+        continuousLineButton.addEventListener('click', () => {
+            continuousLineMode = !continuousLineMode;
+            continuousLineButton.style.backgroundColor = continuousLineMode ? '#575757' : '#333';
+            continuousLineButton.style.color = continuousLineMode ? '#ffffff' : '#ffffff';
         });
         
         toggleColorButton.addEventListener('click', () => {
@@ -290,23 +299,37 @@
 
         drawingArea.addEventListener('mousedown', (e) => {
             if (e.button === 0) { // Botão esquerdo do mouse
-                if (firstClickElement) {
-                    secondClick(e);
-                } else {
-                    if (e.shiftKey) {
-                        // Inicia o arrasto para desenhar uma linha reta
-                        isDraggingLine = true;
-                        dragStartX = e.clientX;
-                        dragStartY = e.clientY;
+                if (continuousLineMode) {
+                    // Inicia o arrasto para desenhar uma linha contínua
+                    isDraggingLine = true;
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
 
-                        currentWire = document.createElement('div');
-                        currentWire.classList.add('wire');
-                        currentWire.style.backgroundColor = wireColor;
-                        currentWire.style.height = `${wireWidth}px`;
-                        currentWire.style.position = 'absolute';
-                        drawingArea.appendChild(currentWire);
+                    currentWire = document.createElement('div');
+                    currentWire.classList.add('wire');
+                    currentWire.style.backgroundColor = wireColor;
+                    currentWire.style.height = `${wireWidth}px`;
+                    currentWire.style.position = 'absolute';
+                    drawingArea.appendChild(currentWire);
+                } else {
+                    if (firstClickElement) {
+                        secondClick(e);
                     } else {
-                        firstClick(e);
+                        if (e.shiftKey) {
+                            // Inicia o arrasto para desenhar uma linha reta
+                            isDraggingLine = true;
+                            dragStartX = e.clientX;
+                            dragStartY = e.clientY;
+
+                            currentWire = document.createElement('div');
+                            currentWire.classList.add('wire');
+                            currentWire.style.backgroundColor = wireColor;
+                            currentWire.style.height = `${wireWidth}px`;
+                            currentWire.style.position = 'absolute';
+                            drawingArea.appendChild(currentWire);
+                        } else {
+                            firstClick(e);
+                        }
                     }
                 }
             } else if (e.button === 2) { // Botão direito do mouse
@@ -323,22 +346,26 @@
         });
 
         drawingArea.addEventListener('mousemove', (e) => {
-            if (drawing && currentWire) {
-                const endX = e.clientX;
-                const endY = e.clientY;
-                const deltaX = endX - startX;
-                const deltaY = endY - startY;
-
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    currentWire.style.width = `${Math.abs(deltaX)}px`;
+            if (isDraggingLine && currentWire) {
+                const currentX = e.clientX;
+                const currentY = e.clientY;
+                if (continuousLineMode) {
+                    currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
                     currentWire.style.height = `${wireWidth}px`;
-                    currentWire.style.left = `${deltaX > 0 ? startX : endX}px`;
-                    currentWire.style.top = `${startY - wireWidth / 2}px`;
+                    currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
+                    currentWire.style.top = `${Math.min(dragStartY, currentY) - wireWidth / 2}px`;
                 } else {
-                    currentWire.style.width = `${wireWidth}px`;
-                    currentWire.style.height = `${Math.abs(deltaY)}px`;
-                    currentWire.style.left = `${startX - wireWidth / 2}px`;
-                    currentWire.style.top = `${deltaY > 0 ? startY : endY}px`;
+                    if (Math.abs(currentX - dragStartX) > Math.abs(currentY - dragStartY)) {
+                        currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
+                        currentWire.style.height = `${wireWidth}px`;
+                        currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
+                        currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
+                    } else {
+                        currentWire.style.width = `${wireWidth}px`;
+                        currentWire.style.height = `${Math.abs(currentY - dragStartY)}px`;
+                        currentWire.style.left = `${dragStartX - wireWidth / 2}px`;
+                        currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
+                    }
                 }
             } else if (selecting && selectionRectangle) {
                 const currentX = e.clientX;
@@ -347,19 +374,12 @@
                 selectionRectangle.style.height = `${Math.abs(currentY - startY)}px`;
                 selectionRectangle.style.left = `${Math.min(startX, currentX)}px`;
                 selectionRectangle.style.top = `${Math.min(startY, currentY)}px`;
-            } else if (isDraggingLine && currentWire) {
-                const currentX = e.clientX;
-                const currentY = e.clientY;
-                currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
-                currentWire.style.height = `${wireWidth}px`;
-                currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
-                currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
             }
         });
 
         drawingArea.addEventListener('mouseup', (e) => {
-            if (drawing && e.button === 0) {
-                drawing = false;
+            if (isDraggingLine && e.button === 0) {
+                isDraggingLine = false;
                 actions.push(currentWire);
                 currentWire = null;
             } else if (selecting && e.button === 2) {
@@ -373,10 +393,6 @@
                     selectionRectangle.remove();
                     selectionRectangle = null;
                 }
-            } else if (isDraggingLine && e.button === 0) {
-                isDraggingLine = false;
-                actions.push(currentWire);
-                currentWire = null;
             }
         });
 
