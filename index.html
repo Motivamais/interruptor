@@ -72,7 +72,7 @@
         #wireWidthContainer label {
             color: white;
         }
-        #lampImage, #lampImageOn, #bocalImage {
+        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage {
             position: absolute;
             width: 150px;
             height: 150px;
@@ -95,6 +95,11 @@
         }
         #bocalImage {
             top: 350px;
+            left: 50%;
+            transform: translateX(0%)
+        }
+        #disjuntorImage {
+            top: 500px;
             left: 50%;
             transform: translateX(0%);
         }
@@ -146,6 +151,7 @@
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
     <img id="lampImageOn" src="lamp-on.png" alt="Lâmpada Acesa">
     <img id="bocalImage" src="bocal.png" alt="Bocal">
+    <img id="disjuntorImage" src="disjuntor.png" alt="Disjuntor">
     <button id="lampButton"></button>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
@@ -167,6 +173,7 @@
         const lampImage = document.getElementById('lampImage');
         const lampImageOn = document.getElementById('lampImageOn');
         const bocalImage = document.getElementById('bocalImage');
+        const disjuntorImage = document.getElementById('disjuntorImage');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
         const lampButton = document.getElementById('lampButton');
@@ -175,7 +182,8 @@
         let selectionRectangle = null;
         let actions = [];
 
-        let elements = [lampButton, lampImage, lampImageOn, bocalImage];
+        // Definindo variáveis para os elementos e seus z-indices originais
+        let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage];
         let originalZIndices = elements.map(el => el.style.zIndex);
 
         toggleColorButton.addEventListener('click', () => {
@@ -212,6 +220,7 @@
             lampImage.style.cursor = cursorStyle;
             lampImageOn.style.cursor = cursorStyle;
             bocalImage.style.cursor = cursorStyle;
+            disjuntorImage.style.cursor = cursorStyle;
             document.querySelectorAll('.draggable-textbox').forEach(element => {
                 element.style.cursor = cursorStyle;
             });
@@ -348,10 +357,11 @@
             lampImageOn.style.left = lampImage.style.left;
         }
 
-        // Tornar a lâmpada, o bocal, o botão e as caixas de texto arrastáveis
+        // Tornar a lâmpada, o bocal, o botão, o disjuntor e as caixas de texto arrastáveis
         makeDraggable(lampImage);
         makeDraggable(lampImageOn);
         makeDraggable(bocalImage);
+        makeDraggable(disjuntorImage);
         makeDraggable(lampButton);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
 
