@@ -404,36 +404,49 @@
         function secondClick(e) {
             endX = e.clientX;
             endY = e.clientY;
-            drawing = true;
 
-            currentWire = document.createElement('div');
-            currentWire.classList.add('wire');
-            currentWire.style.backgroundColor = wireColor;
-            currentWire.style.height = `${wireWidth}px`;
-            currentWire.style.position = 'absolute';
-            currentWire.style.left = `${firstClickElement.x}px`;
-            currentWire.style.top = `${firstClickElement.y - wireWidth / 2}px`;
-            drawingArea.appendChild(currentWire);
+            if (firstClickElement) {
+                drawRightAngleLine(firstClickElement.x, firstClickElement.y, endX, endY);
+                firstClickElement = null;
+            }
+        }
 
-            const deltaX = endX - firstClickElement.x;
-            const deltaY = endY - firstClickElement.y;
+        function drawRightAngleLine(x1, y1, x2, y2) {
+            const midX = x1;
+            const midY = y2;
 
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                currentWire.style.width = `${Math.abs(deltaX)}px`;
-                currentWire.style.height = `${wireWidth}px`;
-                currentWire.style.left = `${deltaX > 0 ? firstClickElement.x : endX}px`;
-                currentWire.style.top = `${firstClickElement.y - wireWidth / 2}px`;
+            // Draw first segment (horizontal)
+            drawLineSegment(x1, y1, midX, y1);
+            // Draw second segment (vertical)
+            drawLineSegment(midX, y1, midX, midY);
+            // Draw third segment (horizontal)
+            drawLineSegment(midX, midY, x2, midY);
+        }
+
+        function drawLineSegment(x1, y1, x2, y2) {
+            const segment = document.createElement('div');
+            segment.classList.add('wire');
+            segment.style.backgroundColor = wireColor;
+            segment.style.width = `${wireWidth}px`;
+            segment.style.height = `${wireWidth}px`;
+            segment.style.position = 'absolute';
+            segment.style.left = `${x1}px`;
+            segment.style.top = `${y1 - wireWidth / 2}px`;
+
+            if (x1 !== x2) {
+                segment.style.width = `${Math.abs(x2 - x1)}px`;
+                segment.style.height = `${wireWidth}px`;
+                segment.style.left = `${Math.min(x1, x2)}px`;
+                segment.style.top = `${y1 - wireWidth / 2}px`;
             } else {
-                currentWire.style.width = `${wireWidth}px`;
-                currentWire.style.height = `${Math.abs(deltaY)}px`;
-                currentWire.style.left = `${firstClickElement.x - wireWidth / 2}px`;
-                currentWire.style.top = `${deltaY > 0 ? firstClickElement.y : endY}px`;
+                segment.style.width = `${wireWidth}px`;
+                segment.style.height = `${Math.abs(y2 - y1)}px`;
+                segment.style.left = `${x1 - wireWidth / 2}px`;
+                segment.style.top = `${Math.min(y1, y2)}px`;
             }
 
-            actions.push(currentWire);
-            currentWire = null;
-            drawing = false;
-            firstClickElement = null;
+            drawingArea.appendChild(segment);
+            actions.push(segment);
         }
 
         // Tornar a lâmpada, o bocal, o botão, o disjuntor e as caixas de texto arrastáveis
