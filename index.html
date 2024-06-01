@@ -86,7 +86,7 @@
         #wireWidthContainer label {
             color: white;
         }
-        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage {
+        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage, #treeway1Image1, #treeway1Image2 {
             position: absolute;
             width: 150px;
             height: 150px;
@@ -131,6 +131,16 @@
             cursor: grab;
             z-index: 3;
             display: none;
+        }
+        #treeway1Image1 {
+            top: 650px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #treeway1Image2 {
+            top: 800px;
+            left: 50%;
+            transform: translateX(-50%);
         }
         .draggable-textbox {
             position: absolute;
@@ -194,6 +204,8 @@
             <li data-element="bocalImage">Bocal</li>
             <li data-element="disjuntorImage">Disjuntor</li>
             <li data-element="lampButton">Botão</li>
+            <li data-element="treeway1Image1">Treeway1 (1)</li>
+            <li data-element="treeway1Image2">Treeway1 (2)</li>
         </ul>
     </div>
     <div id="drawingArea"></div>
@@ -201,6 +213,8 @@
     <img id="lampImageOn" src="lamp-on.png" alt="Lâmpada Acesa">
     <img id="bocalImage" src="bocal.png" alt="Bocal">
     <img id="disjuntorImage" src="disjuntor.png" alt="Disjuntor">
+    <img id="treeway1Image1" src="treeway1.png" alt="Treeway1 Image 1">
+    <img id="treeway1Image2" src="treeway1.png" alt="Treeway1 Image 2">
     <button id="lampButton"></button>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
@@ -226,6 +240,8 @@
         const lampImageOn = document.getElementById('lampImageOn');
         const bocalImage = document.getElementById('bocalImage');
         const disjuntorImage = document.getElementById('disjuntorImage');
+        const treeway1Image1 = document.getElementById('treeway1Image1');
+        const treeway1Image2 = document.getElementById('treeway1Image2');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
         const lampButton = document.getElementById('lampButton');
@@ -242,9 +258,10 @@
         let isDraggingLine = false;
         let dragStartX, dragStartY;
         let continuousLineMode = false;
+        let treeway1ButtonRotated = false;
 
         // Definindo variáveis para os elementos e seus z-indices originais
-        let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage];
+        let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2];
         let originalZIndices = elements.map(el => el.style.zIndex);
 
         document.getElementById('menuButton').addEventListener('click', () => {
@@ -272,7 +289,7 @@
                 element.style.display = element.style.display === 'none' ? 'block' : 'none';
             }
         });
-        
+
         toggleColorButton.addEventListener('click', () => {
             const currentColorIndex = colors.indexOf(wireColor);
             wireColor = colors[(currentColorIndex + 1) % colors.length];
@@ -301,6 +318,34 @@
             }
         });
 
+        treeway1Image1.addEventListener('click', toggleLamp);
+        treeway1Image2.addEventListener('click', toggleLamp);
+
+        function toggleLamp() {
+            lampOn = !lampOn;
+            if (lampOn) {
+                lampImageOn.style.display = 'block';
+                synchronizeLampPositions();
+                lampImage.style.display = 'none';
+            } else {
+                lampImage.style.display = 'block';
+                synchronizeLampPositions();
+                lampImageOn.style.display = 'none';
+            }
+        }
+
+        treeway1Image1.addEventListener('click', () => {
+            treeway1ButtonRotated = !treeway1ButtonRotated;
+            treeway1Image1.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
+            treeway1Image2.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
+        });
+
+        treeway1Image2.addEventListener('click', () => {
+            treeway1ButtonRotated = !treeway1ButtonRotated;
+            treeway1Image1.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
+            treeway1Image2.style.transform = treeway1ButtonRotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
+        });
+
         toggleDraggableButton.addEventListener('click', () => {
             draggable = !draggable;
             const cursorStyle = draggable ? 'grab' : 'crosshair';
@@ -308,6 +353,8 @@
             lampImageOn.style.cursor = cursorStyle;
             bocalImage.style.cursor = cursorStyle;
             disjuntorImage.style.cursor = cursorStyle;
+            treeway1Image1.style.cursor = cursorStyle;
+            treeway1Image2.style.cursor = cursorStyle;
             document.querySelectorAll('.draggable-textbox').forEach(element => {
                 element.style.cursor = cursorStyle;
             });
@@ -557,12 +604,14 @@
             actions.push(segment);
         }
 
-        // Tornar a lâmpada, o bocal, o botão, o disjuntor e as caixas de texto arrastáveis
+        // Tornar a lâmpada, o bocal, o botão, o disjuntor, as imagens treeway1 e as caixas de texto arrastáveis
         makeDraggable(lampImage);
         makeDraggable(lampImageOn);
         makeDraggable(bocalImage);
         makeDraggable(disjuntorImage);
         makeDraggable(lampButton);
+        makeDraggable(treeway1Image1);
+        makeDraggable(treeway1Image2);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
 
         // Ajustar tamanho da caixa de título automaticamente
