@@ -92,6 +92,7 @@
             height: 150px;
             cursor: grab;
             z-index: 3;
+            display: none;
         }
         /* Posição inicial da lâmpada apagada */
         #lampImage {
@@ -129,6 +130,7 @@
             border: none;
             cursor: grab;
             z-index: 3;
+            display: none;
         }
         .draggable-textbox {
             position: absolute;
@@ -155,6 +157,20 @@
             width: 300px;
             font-size: 1.2em;
         }
+        .element-list {
+            display: none;
+            background-color: #444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .element-list li {
+            cursor: pointer;
+            padding: 5px 0;
+        }
+        .element-list li:hover {
+            background-color: #575757;
+        }
     </style>
 </head>
 <body>
@@ -171,6 +187,14 @@
         <a id="undoButton">Voltar</a>
         <a id="toggleDraggableButton">Arrastável</a>
         <a id="continuousLineButton">Linha Contínua</a>
+        <a id="elementsButton">Elementos</a>
+        <ul id="elementList" class="element-list">
+            <li data-element="lampImage">Lâmpada</li>
+            <li data-element="lampImageOn">Lâmpada Acesa</li>
+            <li data-element="bocalImage">Bocal</li>
+            <li data-element="disjuntorImage">Disjuntor</li>
+            <li data-element="lampButton">Botão</li>
+        </ul>
     </div>
     <div id="drawingArea"></div>
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
@@ -207,6 +231,8 @@
         const lampButton = document.getElementById('lampButton');
         const toggleDraggableButton = document.getElementById('toggleDraggableButton');
         const continuousLineButton = document.getElementById('continuousLineButton');
+        const elementsButton = document.getElementById('elementsButton');
+        const elementList = document.getElementById('elementList');
         let selectedLines = [];
         let selectionRectangle = null;
         let actions = [];
@@ -233,6 +259,18 @@
             continuousLineMode = !continuousLineMode;
             continuousLineButton.style.backgroundColor = continuousLineMode ? '#575757' : '#333';
             continuousLineButton.style.color = continuousLineMode ? '#ffffff' : '#ffffff';
+        });
+
+        elementsButton.addEventListener('click', () => {
+            elementList.style.display = elementList.style.display === 'block' ? 'none' : 'block';
+        });
+
+        elementList.addEventListener('click', (e) => {
+            if (e.target.tagName === 'LI') {
+                const elementId = e.target.getAttribute('data-element');
+                const element = document.getElementById(elementId);
+                element.style.display = element.style.display === 'none' ? 'block' : 'none';
+            }
         });
         
         toggleColorButton.addEventListener('click', () => {
@@ -350,10 +388,28 @@
                 const currentX = e.clientX;
                 const currentY = e.clientY;
                 if (continuousLineMode) {
-                    currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
-                    currentWire.style.height = `${wireWidth}px`;
-                    currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
-                    currentWire.style.top = `${Math.min(dragStartY, currentY) - wireWidth / 2}px`;
+                    const deltaX = currentX - dragStartX;
+                    const deltaY = currentY - dragStartY;
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
+                        currentWire.style.height = `${wireWidth}px`;
+                        currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
+                        currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
+                    } else {
+                        if (Math.abs(deltaX) === Math.abs(deltaY)) {
+                            // 45 graus
+                            currentWire.style.width = `${Math.abs(deltaX)}px`;
+                            currentWire.style.height = `${Math.abs(deltaY)}px`;
+                            currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
+                            currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
+                        } else {
+                            // Vertical
+                            currentWire.style.width = `${wireWidth}px`;
+                            currentWire.style.height = `${Math.abs(currentY - dragStartY)}px`;
+                            currentWire.style.left = `${dragStartX - wireWidth / 2}px`;
+                            currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
+                        }
+                    }
                 } else {
                     if (Math.abs(currentX - dragStartX) > Math.abs(currentY - dragStartY)) {
                         currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
