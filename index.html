@@ -92,11 +92,12 @@
             top: 150px;
             left: 50%;
             transform: translateX(0%)scaley(-1);
+            width: 300px;
         }
         #bocalImage {
             top: 350px;
             left: 50%;
-            transform: translateX(0%)
+            transform: translateX(0%);
         }
         #disjuntorImage {
             top: 500px;
@@ -181,6 +182,7 @@
         let selectedLines = [];
         let selectionRectangle = null;
         let actions = [];
+        let currentWire = null;
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage];
@@ -253,6 +255,15 @@
                 drawing = true;
                 startX = e.clientX;
                 startY = e.clientY;
+                
+                currentWire = document.createElement('div');
+                currentWire.classList.add('wire');
+                currentWire.style.backgroundColor = wireColor;
+                currentWire.style.height = `${wireWidth}px`;
+                currentWire.style.position = 'absolute';
+                currentWire.style.left = `${startX}px`;
+                currentWire.style.top = `${startY - wireWidth / 2}px`;
+                drawingArea.appendChild(currentWire);
             } else if (e.button === 2) { // Botão direito do mouse
                 e.preventDefault();
                 selecting = true;
@@ -267,7 +278,24 @@
         });
 
         drawingArea.addEventListener('mousemove', (e) => {
-            if (selecting && selectionRectangle) {
+            if (drawing && currentWire) {
+                const endX = e.clientX;
+                const endY = e.clientY;
+                const deltaX = endX - startX;
+                const deltaY = endY - startY;
+
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    currentWire.style.width = `${Math.abs(deltaX)}px`;
+                    currentWire.style.height = `${wireWidth}px`;
+                    currentWire.style.left = `${deltaX > 0 ? startX : endX}px`;
+                    currentWire.style.top = `${startY - wireWidth / 2}px`;
+                } else {
+                    currentWire.style.width = `${wireWidth}px`;
+                    currentWire.style.height = `${Math.abs(deltaY)}px`;
+                    currentWire.style.left = `${startX - wireWidth / 2}px`;
+                    currentWire.style.top = `${deltaY > 0 ? startY : endY}px`;
+                }
+            } else if (selecting && selectionRectangle) {
                 const currentX = e.clientX;
                 const currentY = e.clientY;
                 selectionRectangle.style.width = `${Math.abs(currentX - startX)}px`;
@@ -280,34 +308,8 @@
         drawingArea.addEventListener('mouseup', (e) => {
             if (drawing && e.button === 0) {
                 drawing = false;
-                const endX = e.clientX;
-                const endY = e.clientY;
-
-                const wire = document.createElement('div');
-                wire.classList.add('wire');
-                wire.style.backgroundColor = wireColor;
-
-                const deltaX = endX - startX;
-                const deltaY = endY - startY;
-
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    wire.style.height = `${wireWidth}px`;
-                    wire.style.width = `${Math.abs(deltaX)}px`;
-                    wire.style.left = `${deltaX > 0 ? startX : endX}px`;
-                    wire.style.top = `${startY - wireWidth / 2}px`;
-                } else {
-                    wire.style.width = `${wireWidth}px`;
-                    wire.style.height = `${Math.abs(deltaY)}px`;
-                    wire.style.left = `${startX - wireWidth / 2}px`;
-                    wire.style.top = `${deltaY > 0 ? startY : endY}px`;
-                }
-
-                wire.addEventListener('dblclick', () => {
-                    wire.remove();
-                });
-
-                drawingArea.appendChild(wire);
-                actions.push(wire);
+                actions.push(currentWire);
+                currentWire = null;
             } else if (selecting && e.button === 2) {
                 selecting = false;
                 if (selectionRectangle) {
