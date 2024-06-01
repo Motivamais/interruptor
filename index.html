@@ -26,7 +26,7 @@
         }
         .wire {
             position: absolute;
-            z-index: 9; /* Ajuste para garantir que as linhas fiquem acima dos elementos */
+            z-index: 4; /* Ajuste para garantir que as linhas fiquem acima dos elementos */
         }
         .selection-rectangle {
             position: absolute;
@@ -69,23 +69,32 @@
         #wireWidthContainer label {
             color: white;
         }
-        #lampImage {
+        #lampImage, #bocalImage {
             position: absolute;
-            top: 150px;
-            left: 50%;
-            transform: translateX(0%);
             width: 150px;
             height: 150px;
             cursor: grab;
             z-index: 3;
         }
+        #lampImage {
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #bocalImage {
+            top: 350px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
         #lampButton {
             position: absolute;
             top: 50px;
             left: 50%;
-            transform: translateX(0%);
-            width: 100px;
-            height: 100px;
+            transform: translateX(-50%) scaleX(-1);
+            width: 300px;
+            height: 300px;
+            background: url('button-image.png') no-repeat center center;
+            background-size: cover;
             border: none;
             cursor: grab;
             z-index: 3;
@@ -122,7 +131,8 @@
     </div>
     <div id="drawingArea"></div>
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
-    <button id="lampButton"><img src="button-image.png" alt="Botão"></button>
+    <img id="bocalImage" src="bocal.png" alt="Bocal">
+    <button id="lampButton"></button>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
     <input type="text" class="draggable-textbox" value="Caixa de texto 3">
@@ -140,6 +150,7 @@
         const wireWidthButton = document.getElementById('wireWidthButton');
         const wireWidthContainer = document.getElementById('wireWidthContainer');
         const lampImage = document.getElementById('lampImage');
+        const bocalImage = document.getElementById('bocalImage');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
         const lampButton = document.getElementById('lampButton');
@@ -257,20 +268,6 @@
             }
         });
 
-        document.addEventListener('mousemove', (e) => {
-            if (drawing) {
-                // Prevenção de comportamento estranho ao desenhar
-                e.preventDefault();
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Delete') {
-                selectedLines.forEach(line => line.remove());
-                selectedLines = [];
-            }
-        });
-
         // Função para tornar um elemento arrastável
         function makeDraggable(element) {
             let isDragging = false;
@@ -300,8 +297,9 @@
             });
         }
 
-        // Tornar a lâmpada, o botão e as caixas de texto arrastáveis
+        // Tornar a lâmpada, o bocal, o botão e as caixas de texto arrastáveis
         makeDraggable(lampImage);
+        makeDraggable(bocalImage);
         makeDraggable(lampButton);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
 
