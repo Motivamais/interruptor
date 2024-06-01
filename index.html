@@ -69,7 +69,7 @@
         #wireWidthContainer label {
             color: white;
         }
-        #lampImage, #bocalImage {
+        #lampImage, #lampImageOn, #bocalImage {
             position: absolute;
             width: 150px;
             height: 150px;
@@ -79,7 +79,10 @@
         #lampImage {
             top: 150px;
             left: 50%;
-            transform: translateX(-50%)scaley(-1);;
+            transform: translateX(-50%);
+        }
+        #lampImageOn {
+            display: none; /* Inicialmente invisível */
         }
         #bocalImage {
             top: 350px;
@@ -131,6 +134,7 @@
     </div>
     <div id="drawingArea"></div>
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
+    <img id="lampImageOn" src="lamp-on.png" alt="Lâmpada Acesa">
     <img id="bocalImage" src="bocal.png" alt="Bocal">
     <button id="lampButton"></button>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
@@ -150,6 +154,7 @@
         const wireWidthButton = document.getElementById('wireWidthButton');
         const wireWidthContainer = document.getElementById('wireWidthContainer');
         const lampImage = document.getElementById('lampImage');
+        const lampImageOn = document.getElementById('lampImageOn');
         const bocalImage = document.getElementById('bocalImage');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
@@ -175,7 +180,15 @@
 
         lampButton.addEventListener('click', () => {
             lampOn = !lampOn;
-            lampImage.src = lampOn ? 'lamp-on.png' : 'lamp-off.png';
+            if (lampOn) {
+                lampImageOn.style.display = 'block';
+                synchronizeLampPositions();
+                lampImage.style.display = 'none';
+            } else {
+                lampImage.style.display = 'block';
+                synchronizeLampPositions();
+                lampImageOn.style.display = 'none';
+            }
         });
 
         resetButton.addEventListener('click', () => {
@@ -286,6 +299,7 @@
                 if (isDragging) {
                     element.style.left = `${e.clientX - offsetX}px`;
                     element.style.top = `${e.clientY - offsetY}px`;
+                    synchronizeLampPositions();
                 }
             });
 
@@ -297,8 +311,14 @@
             });
         }
 
+        function synchronizeLampPositions() {
+            lampImageOn.style.top = lampImage.style.top;
+            lampImageOn.style.left = lampImage.style.left;
+        }
+
         // Tornar a lâmpada, o bocal, o botão e as caixas de texto arrastáveis
         makeDraggable(lampImage);
+        makeDraggable(lampImageOn);
         makeDraggable(bocalImage);
         makeDraggable(lampButton);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
