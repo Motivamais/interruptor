@@ -260,8 +260,6 @@
         let continuousLineMode = false;
         let treeway1Image1Rotated = false;
         let treeway1Image2Rotated = false;
-        let treeway1Image1LampOn = false;
-        let treeway1Image2LampOn = false;
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2];
@@ -323,25 +321,26 @@
 
         treeway1Image1.addEventListener('click', () => {
             treeway1Image1Rotated = !treeway1Image1Rotated;
-            treeway1Image1.style.transform = treeway1Image1Rotated ? 'rotateX(180deg)' : 'rotateX(0deg)';
-            treeway1Image1LampOn = !treeway1Image1LampOn;
-            toggleLamp(treeway1Image1LampOn, lampImage, lampImageOn);
+            treeway1Image1.style.transform = treeway1Image1Rotated ? 'rotateY(-180deg)' : 'rotateY(0deg)';
+            toggleLamp();
         });
 
         treeway1Image2.addEventListener('click', () => {
             treeway1Image2Rotated = !treeway1Image2Rotated;
-            treeway1Image2.style.transform = treeway1Image2Rotated ? 'rotateX(180deg)' : 'rotateX(0deg)';
-            treeway1Image2LampOn = !treeway1Image2LampOn;
-            toggleLamp(treeway1Image2LampOn, lampImage, lampImageOn);
+            treeway1Image2.style.transform = treeway1Image2Rotated ? 'rotateY(180deg)' : 'rotateY(0deg)';
+            toggleLamp();
         });
 
-        function toggleLamp(isOn, lampImage, lampImageOn) {
-            if (isOn) {
+        function toggleLamp() {
+            lampOn = !lampOn;
+            if (lampOn) {
                 lampImageOn.style.display = 'block';
+                synchronizeLampPositions();
                 lampImage.style.display = 'none';
             } else {
-                lampImageOn.style.display = 'block';
-                lampImage.style.display = 'none';
+                lampImage.style.display = 'block';
+                synchronizeLampPositions();
+                lampImageOn.style.display = 'none';
             }
         }
 
@@ -609,4 +608,23 @@
         makeDraggable(bocalImage);
         makeDraggable(disjuntorImage);
         makeDraggable(lampButton);
-        makeDr
+        makeDraggable(treeway1Image1);
+        makeDraggable(treeway1Image2);
+        document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
+
+        // Ajustar tamanho da caixa de título automaticamente
+        const titleBox = document.getElementById('titleBox');
+        titleBox.addEventListener('input', () => {
+            titleBox.style.width = 'auto';
+            titleBox.style.width = (titleBox.scrollWidth + 10) + 'px';
+        });
+
+        // Adicionar listener para mouseup no documento para parar o desenho ao soltar o botão do mouse fora da área de desenho
+        document.addEventListener('mouseup', (e) => {
+            if (drawing && e.button === 0) {
+                drawing = false;
+            }
+        });
+    </script>
+</body>
+</html>
