@@ -140,6 +140,8 @@
             cursor: grab;
             border: 1px solid #333;
             background-color: #ccc;
+            resize: both;
+            overflow: auto;
         }
         .draggable-textbox:nth-child(2) {
             top: 300px;
@@ -148,6 +150,10 @@
         .draggable-textbox:nth-child(3) {
             top: 400px;
             left: 50px;
+        }
+        .draggable-textbox.large {
+            width: 300px;
+            font-size: 1.2em;
         }
     </style>
 </head>
@@ -174,6 +180,9 @@
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
     <input type="text" class="draggable-textbox" value="Caixa de texto 3">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 4">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 5">
+    <input type="text" class="draggable-textbox large" value="Título do Projeto" id="titleBox">
 
     <script>
         let drawing = false;
@@ -483,6 +492,13 @@
         makeDraggable(disjuntorImage);
         makeDraggable(lampButton);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
+
+        // Ajustar tamanho da caixa de título automaticamente
+        const titleBox = document.getElementById('titleBox');
+        titleBox.addEventListener('input', () => {
+            titleBox.style.width = 'auto';
+            titleBox.style.width = (titleBox.scrollWidth + 10) + 'px';
+        });
 
         // Adicionar listener para mouseup no documento para parar o desenho ao soltar o botão do mouse fora da área de desenho
         document.addEventListener('mouseup', (e) => {
