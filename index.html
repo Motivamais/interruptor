@@ -135,12 +135,12 @@
         #treeway1Image1 {
             top: 650px;
             left: 50%;
-            transform: translateX(0%)scaley(-1);
+            transform: translateX(-50%);
         }
         #treeway1Image2 {
             top: 800px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) rotateX(180deg); /* Iniciar com rotação 180 graus no eixo X */
         }
         .draggable-textbox {
             position: absolute;
@@ -258,12 +258,9 @@
         let isDraggingLine = false;
         let dragStartX, dragStartY;
         let continuousLineMode = false;
-        let treeway1ButtonRotated = false;
-        let treeway1Image1Rotated = false;
-        let treeway1Image2Rotated = false;
-        let treeway1Image1LampOn = false;
-        let treeway1Image2LampOn = false;
 
+        // Variáveis de estado para controlar a lâmpada
+        let lampState = false;
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2];
@@ -288,10 +285,10 @@
         });
 
         elementList.addEventListener('click', (e) => {
-    if (e.target.tagName === 'LI') {
-        const elementId = e.target.getAttribute('data-element');
-        const element = document.getElementById(elementId);
-        element.style.display = element.style.display === 'none' ? 'block' : 'none';
+            if (e.target.tagName === 'LI') {
+                const elementId = e.target.getAttribute('data-element');
+                const element = document.getElementById(elementId);
+                element.style.display = element.style.display === 'none' ? 'block' : 'none';
             }
         });
 
@@ -311,57 +308,27 @@
         });
 
         lampButton.addEventListener('click', () => {
-            lampOn = !lampOn;
-            if (lampOn) {
-                lampImageOn.style.display = 'block';
-                synchronizeLampPositions();
-                lampImage.style.display = 'none';
-            } else {
-                lampImage.style.display = 'block';
-                synchronizeLampPositions();
-                lampImageOn.style.display = 'none';
-            }
+            toggleLamp();
         });
 
-        treeway1Image1.addEventListener('click', toggleLamp);
-        treeway1Image2.addEventListener('click', toggleLamp);
-
-        function toggleLamp() {
-            lampOn = !lampOn;
-            if (lampOn) {
-                lampImageOn.style.display = 'block';
-                synchronizeLampPositions();
-                lampImage.style.display = 'none';
-            } else {
-                lampImage.style.display = 'block';
-                synchronizeLampPositions();
-                lampImageOn.style.display = 'none';
-            }
-        }
-
         treeway1Image1.addEventListener('click', () => {
-            treeway1ButtonRotated = !treeway1ButtonRotated;
-            treeway1Image1.style.transform = treeway1ButtonRotated ? 'rotatex(180deg)' : 'rotatex(0deg)';
-            treeway1Image1LampOn = !treeway1Image1LampOn;
-            toggleLamp(treeway1Image1LampOn,lampImage);
+            toggleLamp();
         });
 
         treeway1Image2.addEventListener('click', () => {
-            treeway1Image2Rotated = !treeway1Image2Rotated;
-            treeway1Image2.style.transform = treeway1Image2Rotated ? 'rotatex(180deg)' : 'rotatex(0deg)';
-            treeway1Image2LampOn = !treeway1Image2LampOn;
-            toggleLamp(treeway1Image2LampOn,lampImage);
+            toggleLamp();
         });
-        function toggleLamp(isOn, lampImage, lampImageOn) {
-    if (isOn) {
-        lampImageOn.style.display = 'block';
-        lampImage.style.display = 'none';
-    } else {
-        lampImage.style.display = 'block';
-        lampImageOn.style.display = 'none';
-    }
-}
 
+        function toggleLamp() {
+            lampState = !lampState;
+            if (lampState) {
+                lampImageOn.style.display = 'block';
+                lampImage.style.display = 'none';
+            } else {
+                lampImage.style.display = 'block';
+                lampImageOn.style.display = 'none';
+            }
+        }
 
         toggleDraggableButton.addEventListener('click', () => {
             draggable = !draggable;
