@@ -34,9 +34,40 @@
             background-color: rgba(0, 0, 0, 0.1);
             z-index: 2;
         }
-        #toggleColorButton, #wireWidthButton, #resetButton, #undoButton, #toggleDraggableButton {
+        .menu {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            overflow-x: hidden;
+            transition: 0.5s;
+            transform: translateX(-100%);
+        }
+        .menu a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 22px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+        .menu a:hover {
+            background-color: #575757;
+        }
+        .menu .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+        #menuButton {
             position: fixed;
             top: 10px;
+            left: 10px;
             background-color: #333;
             color: white;
             border: none;
@@ -44,30 +75,11 @@
             cursor: pointer;
             z-index: 10;
         }
-        #toggleColorButton {
-            left: 10px;
-        }
-        #wireWidthButton {
-            left: 120px;
-        }
-        #resetButton {
-            left: 230px;
-        }
-        #undoButton {
-            left: 340px;
-        }
-        #toggleDraggableButton {
-            left: 450px;
-        }
         #wireWidthContainer {
             display: none;
-            position: fixed;
-            top: 50px;
-            left: 120px;
             background-color: #333;
             padding: 10px;
             border-radius: 5px;
-            z-index: 10;
         }
         #wireWidthContainer label {
             color: white;
@@ -83,7 +95,7 @@
         #lampImage {
             top: 150px;
             left: 50%;
-            transform: translateX(0%)scaley(-1);
+            transform: translateX(0%) scaleY(-1);
         }
         /* Posição inicial da lâmpada acesa */
         #lampImageOn {
@@ -91,8 +103,7 @@
             z-index: 4;    /* Colocado acima da lâmpada apagada */
             top: 150px;
             left: 50%;
-            transform: translateX(0%)scaley(-1);
-           
+            transform: translateX(0%) scaleY(-1);
         }
         #bocalImage {
             top: 350px;
@@ -139,14 +150,18 @@
     </style>
 </head>
 <body>
-    <button id="toggleColorButton">Trocar Cor</button>
-    <button id="wireWidthButton">Largura do Fio</button>
-    <button id="resetButton">Resetar</button>
-    <button id="undoButton">Voltar</button>
-    <button id="toggleDraggableButton">Arrastável</button>
-    <div id="wireWidthContainer">
-        <label for="wireWidth">Largura do Fio:</label>
-        <input type="range" id="wireWidth" name="wireWidth" min="1" max="10" value="2">
+    <button id="menuButton">Menu</button>
+    <div id="menu" class="menu">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">&times;</a>
+        <a id="toggleColorButton">Trocar Cor</a>
+        <a id="wireWidthButton">Largura do Fio</a>
+        <div id="wireWidthContainer">
+            <label for="wireWidth">Largura do Fio:</label>
+            <input type="range" id="wireWidth" name="wireWidth" min="1" max="10" value="2">
+        </div>
+        <a id="resetButton">Resetar</a>
+        <a id="undoButton">Voltar</a>
+        <a id="toggleDraggableButton">Arrastável</a>
     </div>
     <div id="drawingArea"></div>
     <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
@@ -161,7 +176,7 @@
     <script>
         let drawing = false;
         let selecting = false;
-        let startX, startY;
+        let startX, startY, endX, endY;
         let wireColor = 'black';  // Cor inicial
         let wireWidth = 2;
         let lampOn = false;
@@ -183,11 +198,14 @@
         let selectionRectangle = null;
         let actions = [];
         let currentWire = null;
+        let firstClickElement = null;
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage];
         let originalZIndices = elements.map(el => el.style.zIndex);
 
+        document.getElementById('menuButton').addEventListener('click', openMenu);
+        
         toggleColorButton.addEventListener('click', () => {
             const currentColorIndex = colors.indexOf(wireColor);
             wireColor = colors[(currentColorIndex + 1) % colors.length];
@@ -252,18 +270,11 @@
 
         drawingArea.addEventListener('mousedown', (e) => {
             if (e.button === 0) { // Botão esquerdo do mouse
-                drawing = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                
-                currentWire = document.createElement('div');
-                currentWire.classList.add('wire');
-                currentWire.style.backgroundColor = wireColor;
-                currentWire.style.height = `${wireWidth}px`;
-                currentWire.style.position = 'absolute';
-                currentWire.style.left = `${startX}px`;
-                currentWire.style.top = `${startY - wireWidth / 2}px`;
-                drawingArea.appendChild(currentWire);
+                if (firstClickElement) {
+                    secondClick(e);
+                } else {
+                    firstClick(e);
+                }
             } else if (e.button === 2) { // Botão direito do mouse
                 e.preventDefault();
                 selecting = true;
@@ -324,6 +335,12 @@
             }
         });
 
+        drawingArea.addEventListener('dblclick', (e) => {
+            if (e.target.classList.contains('wire')) {
+                e.target.remove();
+            }
+        });
+
         // Função para tornar um elemento arrastável
         function makeDraggable(element) {
             let isDragging = false;
@@ -357,6 +374,55 @@
         function synchronizeLampPositions() {
             lampImageOn.style.top = lampImage.style.top;
             lampImageOn.style.left = lampImage.style.left;
+        }
+
+        // Função para abrir o menu
+        function openMenu() {
+            document.getElementById('menu').style.transform = 'translateX(0)';
+        }
+
+        // Função para fechar o menu
+        function closeMenu() {
+            document.getElementById('menu').style.transform = 'translateX(-100%)';
+        }
+
+        function firstClick(e) {
+            firstClickElement = { x: e.clientX, y: e.clientY };
+        }
+
+        function secondClick(e) {
+            endX = e.clientX;
+            endY = e.clientY;
+            drawing = true;
+
+            currentWire = document.createElement('div');
+            currentWire.classList.add('wire');
+            currentWire.style.backgroundColor = wireColor;
+            currentWire.style.height = `${wireWidth}px`;
+            currentWire.style.position = 'absolute';
+            currentWire.style.left = `${firstClickElement.x}px`;
+            currentWire.style.top = `${firstClickElement.y - wireWidth / 2}px`;
+            drawingArea.appendChild(currentWire);
+
+            const deltaX = endX - firstClickElement.x;
+            const deltaY = endY - firstClickElement.y;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                currentWire.style.width = `${Math.abs(deltaX)}px`;
+                currentWire.style.height = `${wireWidth}px`;
+                currentWire.style.left = `${deltaX > 0 ? firstClickElement.x : endX}px`;
+                currentWire.style.top = `${firstClickElement.y - wireWidth / 2}px`;
+            } else {
+                currentWire.style.width = `${wireWidth}px`;
+                currentWire.style.height = `${Math.abs(deltaY)}px`;
+                currentWire.style.left = `${firstClickElement.x - wireWidth / 2}px`;
+                currentWire.style.top = `${deltaY > 0 ? firstClickElement.y : endY}px`;
+            }
+
+            actions.push(currentWire);
+            currentWire = null;
+            drawing = false;
+            firstClickElement = null;
         }
 
         // Tornar a lâmpada, o bocal, o botão, o disjuntor e as caixas de texto arrastáveis
