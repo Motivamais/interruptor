@@ -26,7 +26,7 @@
         }
         .wire {
             position: absolute;
-            z-index: 20; /* Ajuste para garantir que as linhas fiquem acima dos elementos */
+            z-index: 4; /* Ajuste para garantir que as linhas fiquem acima dos elementos */
         }
         .selection-rectangle {
             position: absolute;
@@ -34,7 +34,7 @@
             background-color: rgba(0, 0, 0, 0.1);
             z-index: 2;
         }
-        #toggleColorButton, #wireWidthButton, #resetButton, #undoButton {
+        #toggleColorButton, #wireWidthButton, #resetButton, #undoButton, #toggleDraggableButton {
             position: fixed;
             top: 10px;
             background-color: #333;
@@ -56,6 +56,9 @@
         #undoButton {
             left: 340px;
         }
+        #toggleDraggableButton {
+            left: 450px;
+        }
         #wireWidthContainer {
             display: none;
             position: fixed;
@@ -74,19 +77,21 @@
             width: 150px;
             height: 150px;
             cursor: grab;
-            z-index: 1;
+            z-index: 3;
         }
+        /* Posição inicial da lâmpada apagada */
         #lampImage {
             top: 150px;
             left: 50%;
-            transform: translateX(0%)scaley(-1);
+            transform: translateX(-50%);
         }
+        /* Posição inicial da lâmpada acesa */
         #lampImageOn {
             display: none; /* Inicialmente invisível */
-            z-index: 1; /* Colocado acima da lâmpada apagada */
+            z-index: 4;    /* Colocado acima da lâmpada apagada */
             top: 150px;
             left: 50%;
-             transform: translateX(0%)scaley(-1);
+            transform: translateX(0%);
         }
         #bocalImage {
             top: 350px;
@@ -104,7 +109,7 @@
             background-size: cover;
             border: none;
             cursor: grab;
-            z-index: 1;
+            z-index: 3;
         }
         .draggable-textbox {
             position: absolute;
@@ -132,6 +137,7 @@
     <button id="wireWidthButton">Largura do Fio</button>
     <button id="resetButton">Resetar</button>
     <button id="undoButton">Voltar</button>
+    <button id="toggleDraggableButton">Arrastável</button>
     <div id="wireWidthContainer">
         <label for="wireWidth">Largura do Fio:</label>
         <input type="range" id="wireWidth" name="wireWidth" min="1" max="10" value="2">
@@ -152,6 +158,7 @@
         let wireColor = 'black';  // Cor inicial
         let wireWidth = 2;
         let lampOn = false;
+        let draggable = true;
         const colors = ['black', 'blue', 'green'];
         const drawingArea = document.getElementById('drawingArea');
         const toggleColorButton = document.getElementById('toggleColorButton');
@@ -163,6 +170,7 @@
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
         const lampButton = document.getElementById('lampButton');
+        const toggleDraggableButton = document.getElementById('toggleDraggableButton');
         let selectedLines = [];
         let selectionRectangle = null;
         let actions = [];
@@ -193,6 +201,17 @@
                 synchronizeLampPositions();
                 lampImageOn.style.display = 'none';
             }
+        });
+
+        toggleDraggableButton.addEventListener('click', () => {
+            draggable = !draggable;
+            const cursorStyle = draggable ? 'grab' : 'default';
+            lampImage.style.cursor = cursorStyle;
+            lampImageOn.style.cursor = cursorStyle;
+            bocalImage.style.cursor = cursorStyle;
+            document.querySelectorAll('.draggable-textbox').forEach(element => {
+                element.style.cursor = cursorStyle;
+            });
         });
 
         resetButton.addEventListener('click', () => {
@@ -291,7 +310,7 @@
             let offsetX, offsetY;
 
             element.addEventListener('mousedown', (e) => {
-                if (e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
+                if (draggable && e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
                     isDragging = true;
                     offsetX = e.clientX - element.getBoundingClientRect().left;
                     offsetY = e.clientY - element.getBoundingClientRect().top;
