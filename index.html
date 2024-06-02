@@ -321,15 +321,19 @@
 
         treeway1Image1.addEventListener('click', () => {
             treeway1Image1Rotated = !treeway1Image1Rotated;
-            treeway1Image1.style.transform = treeway1Image1Rotated ? 'rotatex(0deg)' : 'rotatex(0deg)';
+            updateTreewayRotation();
             toggleLamp();
         });
 
         treeway1Image2.addEventListener('click', () => {
             treeway1Image2Rotated = !treeway1Image2Rotated;
-            treeway1Image2.style.transform = treeway1Image2Rotated ? 'rotatex(0deg)' : 'rotatex(0deg)';
-            toggleLamp();
+            updateTreewayRotation();
+             toggleLamp();
         });
+        function updateTreewayRotation() {
+    treeway1Image1.style.transform = treeway1Image1Rotated ? 'translateX(0%) scaleX(-1)' : 'translateX(0%) scaleX(1)';
+    treeway1Image2.style.transform = treeway1Image2Rotated ? 'translateX(0%) scaleX(-1)' : 'translateX(0%) scaleX(1)';
+}
 
         function toggleLamp() {
             lampOn = !lampOn;
