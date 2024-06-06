@@ -86,7 +86,7 @@
         #wireWidthContainer label {
             color: white;
         }
-        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage, #treeway1Image1, #treeway1Image2 {
+        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage, #treeway1Image1, #treeway1Image2, #forwayImage {
             position: absolute;
             width: 150px;
             height: 150px;
@@ -141,6 +141,11 @@
             top: 800px;
             left: 50%;
             transform: translateX(0%) scaleX(-1);
+        }
+        #forwayImage {
+            top: 950px;
+            left: 50%;
+            transform: translateX(0%) scaleX(1);
         }
         .draggable-textbox {
             position: absolute;
@@ -206,6 +211,7 @@
             <li data-element="lampButton">Botão</li>
             <li data-element="treeway1Image1">Treeway1 (1)</li>
             <li data-element="treeway1Image2">Treeway1 (2)</li>
+            <li data-element="forwayImage">Forway</li>
         </ul>
     </div>
     <div id="drawingArea"></div>
@@ -215,6 +221,7 @@
     <img id="disjuntorImage" src="disjuntor.png" alt="Disjuntor">
     <img id="treeway1Image1" src="treeway1.png" alt="Treeway1 Image 1">
     <img id="treeway1Image2" src="treeway1.png" alt="Treeway1 Image 2">
+    <img id="forwayImage" src="forway.png" alt="Forway Image">
     <button id="lampButton"></button>
     <input type="text" class="draggable-textbox" value="Caixa de texto 1">
     <input type="text" class="draggable-textbox" value="Caixa de texto 2">
@@ -242,6 +249,7 @@
         const disjuntorImage = document.getElementById('disjuntorImage');
         const treeway1Image1 = document.getElementById('treeway1Image1');
         const treeway1Image2 = document.getElementById('treeway1Image2');
+        const forwayImage = document.getElementById('forwayImage');
         const resetButton = document.getElementById('resetButton');
         const undoButton = document.getElementById('undoButton');
         const lampButton = document.getElementById('lampButton');
@@ -262,7 +270,7 @@
         let treeway1Image2Rotated = false;
 
         // Definindo variáveis para os elementos e seus z-indices originais
-        let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2];
+        let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2, forwayImage];
         let originalZIndices = elements.map(el => el.style.zIndex);
 
         document.getElementById('menuButton').addEventListener('click', () => {
@@ -328,12 +336,26 @@
         treeway1Image2.addEventListener('click', () => {
             treeway1Image2Rotated = !treeway1Image2Rotated;
             updateTreewayRotation();
-             toggleLamp();
+            toggleLamp();
         });
+
+        forwayImage.addEventListener('click', () => {
+            lampOn = !lampOn;
+            if (lampOn) {
+                lampImageOn.style.display = 'block';
+                synchronizeLampPositions();
+                lampImage.style.display = 'none';
+            } else {
+                lampImage.style.display = 'block';
+                synchronizeLampPositions();
+                lampImageOn.style.display = 'none';
+            }
+        });
+
         function updateTreewayRotation() {
-    treeway1Image1.style.transform = treeway1Image1Rotated ? 'translateX(0%) scaleX(-1)' : 'translateX(0%) scaleX(-1)';
-    treeway1Image2.style.transform = treeway1Image2Rotated ? 'translateX(0%) scaleX(1)' : 'translateX(0%) scaleX(1)';
-}
+            treeway1Image1.style.transform = treeway1Image1Rotated ? 'translateX(0%) scaleX(-1)' : 'translateX(0%) scaleX(-1)';
+            treeway1Image2.style.transform = treeway1Image2Rotated ? 'translateX(0%) scaleX(1)' : 'translateX(0%) scaleX(1)';
+        }
 
         function toggleLamp() {
             lampOn = !lampOn;
@@ -357,6 +379,7 @@
             disjuntorImage.style.cursor = cursorStyle;
             treeway1Image1.style.cursor = cursorStyle;
             treeway1Image2.style.cursor = cursorStyle;
+            forwayImage.style.cursor = cursorStyle;
             document.querySelectorAll('.draggable-textbox').forEach(element => {
                 element.style.cursor = cursorStyle;
             });
@@ -606,7 +629,7 @@
             actions.push(segment);
         }
 
-        // Tornar a lâmpada, o bocal, o botão, o disjuntor, as imagens treeway1 e as caixas de texto arrastáveis
+        // Tornar a lâmpada, o bocal, o botão, o disjuntor, as imagens treeway1, forway e as caixas de texto arrastáveis
         makeDraggable(lampImage);
         makeDraggable(lampImageOn);
         makeDraggable(bocalImage);
@@ -614,6 +637,7 @@
         makeDraggable(lampButton);
         makeDraggable(treeway1Image1);
         makeDraggable(treeway1Image2);
+        makeDraggable(forwayImage);
         document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
 
         // Ajustar tamanho da caixa de título automaticamente
