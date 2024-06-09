@@ -86,7 +86,7 @@
         #wireWidthContainer label {
             color: white;
         }
-        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage, #treeway1Image1, #treeway1Image2, #forwayImage,  #quadroImage{
+        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage, #treeway1Image1, #treeway1Image2, #forwayImage, #quadroImage {
             position: absolute;
             width: 150px;
             height: 150px;
@@ -305,15 +305,16 @@
         elementList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 const elementId = e.target.getAttribute('data-element');
-                const element = document.getElementById(elementId);
-               const newElement = originalElement.cloneNode(true);
-        newElement.style.display = 'block';
-        newElement.style.top = '0px'; // Ajuste a posição conforme necessário
-        newElement.style.left = '0px'; // Ajuste a posição conforme necessário
-        drawingArea.appendChild(newElement);
-        makeDraggable(newElement); // Torna o novo elemento arrastável
-    }
-});
+                const originalElement = document.getElementById(elementId);
+                const newElement = originalElement.cloneNode(true);
+                newElement.style.display = 'block';
+                newElement.style.top = '0px'; // Ajuste a posição conforme necessário
+                newElement.style.left = '0px'; // Ajuste a posição conforme necessário
+                drawingArea.appendChild(newElement);
+                makeDraggable(newElement); // Torna o novo elemento arrastável
+            }
+        });
+
         toggleColorButton.addEventListener('click', () => {
             const currentColorIndex = colors.indexOf(wireColor);
             wireColor = colors[(currentColorIndex + 1) % colors.length];
@@ -541,7 +542,7 @@
         });
 
         drawingArea.addEventListener('dblclick', (e) => {
-            if (e.target.classList.contains('wire')) {
+            if (e.target.classList.contains('wire') || e.target.tagName === 'IMG' || e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
                 e.target.remove();
             }
         });
