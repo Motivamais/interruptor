@@ -306,10 +306,14 @@
             if (e.target.tagName === 'LI') {
                 const elementId = e.target.getAttribute('data-element');
                 const element = document.getElementById(elementId);
-                element.style.display = element.style.display === 'none' ? 'block' : 'none';
-            }
-        });
-
+               const newElement = originalElement.cloneNode(true);
+        newElement.style.display = 'block';
+        newElement.style.top = '0px'; // Ajuste a posição conforme necessário
+        newElement.style.left = '0px'; // Ajuste a posição conforme necessário
+        drawingArea.appendChild(newElement);
+        makeDraggable(newElement); // Torna o novo elemento arrastável
+    }
+});
         toggleColorButton.addEventListener('click', () => {
             const currentColorIndex = colors.indexOf(wireColor);
             wireColor = colors[(currentColorIndex + 1) % colors.length];
