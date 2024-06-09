@@ -279,7 +279,6 @@
         let continuousLineMode = false;
         let treeway1Image1Rotated = false;
         let treeway1Image2Rotated = false;
-        let isDraggingElement = false; // Para rastrear se estamos arrastando um elemento
 
         // Definindo variáveis para os elementos e seus z-indices originais
         let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2, forwayImage, quadroImage];
@@ -426,7 +425,7 @@
         });
 
         drawingArea.addEventListener('mousedown', (e) => {
-            if (e.button === 0 && !isDraggingElement) { // Botão esquerdo do mouse e não arrastando um elemento
+            if (e.button === 0) { // Botão esquerdo do mouse
                 if (continuousLineMode) {
                     // Inicia o arrasto para desenhar uma linha contínua
                     isDraggingLine = true;
@@ -556,7 +555,6 @@
             element.addEventListener('mousedown', (e) => {
                 if (draggable && e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
                     isDragging = true;
-                    isDraggingElement = true; // Atualiza o rastreamento de arrasto de elemento
                     offsetX = e.clientX - element.getBoundingClientRect().left;
                     offsetY = e.clientY - element.getBoundingClientRect().top;
                     element.style.cursor = 'grabbing';
@@ -574,7 +572,6 @@
             document.addEventListener('mouseup', () => {
                 if (isDragging) {
                     isDragging = false;
-                    isDraggingElement = false; // Atualiza o rastreamento de arrasto de elemento
                     element.style.cursor = 'grab';
                 }
             });
