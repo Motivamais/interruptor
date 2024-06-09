@@ -153,7 +153,6 @@
             transform: translateX(0%);
             width: 500px;
             height: 500px;
-            z-index: 1;
         }
         .draggable-textbox {
             position: absolute;
@@ -305,13 +304,8 @@
         elementList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 const elementId = e.target.getAttribute('data-element');
-                const originalElement = document.getElementById(elementId);
-                const newElement = originalElement.cloneNode(true);
-                newElement.style.display = 'block';
-                newElement.style.top = '0px'; // Ajuste a posição conforme necessário
-                newElement.style.left = '0px'; // Ajuste a posição conforme necessário
-                drawingArea.appendChild(newElement);
-                makeDraggable(newElement); // Torna o novo elemento arrastável
+                const element = document.getElementById(elementId);
+                element.style.display = element.style.display === 'none' ? 'block' : 'none';
             }
         });
 
@@ -542,7 +536,7 @@
         });
 
         drawingArea.addEventListener('dblclick', (e) => {
-            if (e.target.classList.contains('wire') || e.target.tagName === 'IMG' || e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+            if (e.target.classList.contains('wire')) {
                 e.target.remove();
             }
         });
