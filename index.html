@@ -302,17 +302,27 @@
             elementList.style.display = elementList.style.display === 'block' ? 'none' : 'block';
         });
 
-     elementList.addEventListener('click', (e) => {
+    elementList.addEventListener('click', (e) => {
     if (e.target.tagName === 'LI') {
         const elementId = e.target.getAttribute('data-element');
         const originalElement = document.getElementById(elementId);
         const newElement = originalElement.cloneNode(true);
+
+        // Assegure que os novos elementos tenham as mesmas dimensões e estilo dos originais
+        newElement.style.position = 'absolute';
+        newElement.style.top = `${parseInt(originalElement.style.top) + 10}px`;
+        newElement.style.left = `${parseInt(originalElement.style.left) + 10}px`;
+        newElement.style.width = originalElement.style.width;
+        newElement.style.height = originalElement.style.height;
+        newElement.style.zIndex = originalElement.style.zIndex;
+
+        // Assegure que o ID seja único
+        newElement.id = elementId + Date.now();
+
+        // Torne o novo elemento visível e arrastável
         newElement.style.display = 'block';
-        newElement.style.top = `${parseInt(originalElement.style.top) + 10}px`; // Ajusta a posição conforme necessário
-        newElement.style.left = `${parseInt(originalElement.style.left) + 10}px`; // Ajusta a posição conforme necessário
-        newElement.id = elementId + Date.now(); // Assegura um ID único para o novo elemento
         drawingArea.appendChild(newElement);
-        makeDraggable(newElement); // Torna o novo elemento arrastável
+        makeDraggable(newElement);
     }
 });
         toggleColorButton.addEventListener('click', () => {
@@ -547,20 +557,34 @@
             }
         });
 
-        // Função para tornar um elemento arrastável
-        function makeDraggable(element) {
-            let isDragging = false;
-            let offsetX, offsetY;
+      function makeDraggable(element) {
+    let isDragging = false;
+    let offsetX, offsetY;
 
-            element.addEventListener('mousedown', (e) => {
-                if (draggable && e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
-                    isDragging = true;
-                    offsetX = e.clientX - element.getBoundingClientRect().left;
-                    offsetY = e.clientY - element.getBoundingClientRect().top;
-                    element.style.cursor = 'grabbing';
-                }
-            });
+    element.addEventListener('mousedown', (e) => {
+        if (draggable && e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
+            isDragging = true;
+            offsetX = e.clientX - element.getBoundingClientRect().left;
+            offsetY = e.clientY - element.getBoundingClientRect().top;
+            element.style.cursor = 'grabbing';
+        }
+    });
 
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            element.style.left = `${e.clientX - offsetX}px`;
+            element.style.top = `${e.clientY - offsetY}px`;
+            synchronizeLampPositions();
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            element.style.cursor = 'grab';
+        }
+    });
+}
             document.addEventListener('mousemove', (e) => {
                 if (isDragging) {
                     element.style.left = `${e.clientX - offsetX}px`;
