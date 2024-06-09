@@ -400,7 +400,7 @@
                 elements.forEach(el => el.style.zIndex = 0);
             } else {
                 elements.forEach((el, index) => el.style.zIndex = originalZIndices[index]);
-                quadroImage.style.zIndex = 0; // Garante que o quadro de distribuição fique sempre atrás
+                quadroImage.style.zIndex = 1; // Garante que o quadro de distribuição fique sempre atrás
             }
         });
 
