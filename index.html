@@ -381,20 +381,33 @@
             }
         }
 
-        toggleDraggableButton.addEventListener('click', () => {
-            draggable = !draggable;
-            const cursorStyle = draggable ? 'grab' : 'crosshair';
-            lampImage.style.cursor = cursorStyle;
-            lampImageOn.style.cursor = cursorStyle;
-            bocalImage.style.cursor = cursorStyle;
-            disjuntorImage.style.cursor = cursorStyle;
-            treeway1Image1.style.cursor = cursorStyle;
-            treeway1Image2.style.cursor = cursorStyle;
-            forwayImage.style.cursor = cursorStyle;
-            quadroImage.style.cursor = cursorStyle;
-            document.querySelectorAll('.draggable-textbox').forEach(element => {
-                element.style.cursor = cursorStyle;
-            });
+      toggleDraggableButton.addEventListener('click', () => {
+    draggable = !draggable;
+    const cursorStyle = draggable ? 'grab' : 'crosshair';
+    
+    lampImage.style.cursor = cursorStyle;
+    lampImageOn.style.cursor = cursorStyle;
+    bocalImage.style.cursor = cursorStyle;
+    disjuntorImage.style.cursor = cursorStyle;
+    treeway1Image1.style.cursor = cursorStyle;
+    treeway1Image2.style.cursor = cursorStyle;
+    forwayImage.style.cursor = cursorStyle;
+    quadroImage.style.cursor = cursorStyle;
+    document.querySelectorAll('.draggable-textbox').forEach(element => {
+        element.style.cursor = cursorStyle;
+    });
+
+    if (!draggable) {
+        elements.forEach(el => el.style.zIndex = 0);
+    } else {
+        elements.forEach((el, index) => el.style.zIndex = originalZIndices[index]);
+    }
+
+    // Garante que o quadro de distribuição fique sempre atrás do disjuntor
+    quadroImage.style.zIndex = 2;
+    disjuntorImage.style.zIndex = 5;
+});
+
 
             if (!draggable) {
                 elements.forEach(el => el.style.zIndex = 0);
