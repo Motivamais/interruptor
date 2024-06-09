@@ -26,7 +26,7 @@
         }
         .wire {
             position: absolute;
-            z-index: 10; /* Garantir que as linhas fiquem acima dos elementos de fundo, mas abaixo do disjuntor */
+            z-index: 10; /* Garantir que as linhas fiquem acima dos outros elementos */
         }
         .selection-rectangle {
             position: absolute;
@@ -93,9 +93,9 @@
             cursor: grab;
             z-index: 3;
             display: none;
-            margin: 0; /* Remover qualquer margem */
-            padding: 0; /* Remover qualquer padding */
-            border: none; /* Remover qualquer borda */
+            margin: 0;
+            padding: 0;
+            border: none;
         }
         #lampImage {
             top: 150px;
@@ -114,15 +114,11 @@
             left: 50%;
             transform: translateX(0%);
         }
-        /* Definir z-index do disjuntor */
         #disjuntorImage {
             top: 500px;
             left: 50%;
             transform: translateX(0%);
-            z-index: 5; /* Certifique-se de que o disjuntor fique acima das linhas */
-             margin: 0; /* Remover qualquer margem */
-             padding: 0; /* Remover qualquer padding */
-             border: none; /* Remover qualquer borda */
+            z-index: 5;
         }
         #lampButton {
             position: absolute;
@@ -153,14 +149,13 @@
             left: 50%;
             transform: translateX(0%) scaleX(1);
         }
-        /* Definir z-index do quadro */
         #quadroImage {
             top: 1100px;
             left: 50%;
             transform: translateX(0%);
             width: 500px;
             height: 500px;
-            z-index: 2; /* Certifique-se de que esta linha esteja presente e configurada corretamente */
+            z-index: 2;
         }
         .draggable-textbox {
             position: absolute;
@@ -410,8 +405,8 @@
             }
 
             // Garante que o quadro de distribuição fique sempre atrás do disjuntor
-            quadroImage.style.zIndex = 0;
-            disjuntorImage.style.zIndex = 1;
+            quadroImage.style.zIndex = 2;
+            disjuntorImage.style.zIndex = 5;
         });
 
         resetButton.addEventListener('click', () => {
