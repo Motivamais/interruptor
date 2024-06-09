@@ -302,7 +302,7 @@
             elementList.style.display = elementList.style.display === 'block' ? 'none' : 'block';
         });
 
-      elementList.addEventListener('click', (e) => {
+     elementList.addEventListener('click', (e) => {
     if (e.target.tagName === 'LI') {
         const elementId = e.target.getAttribute('data-element');
         const originalElement = document.getElementById(elementId);
