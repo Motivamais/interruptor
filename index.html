@@ -91,7 +91,7 @@
             width: 150px;
             height: 150px;
             cursor: grab;
-            z-index: 4;
+            z-index: 3;
             display: none;
         }
         /* Posição inicial da lâmpada apagada */
@@ -153,7 +153,7 @@
             transform: translateX(0%);
             width: 500px;
             height: 500px;
-             z-index: 1;
+            z-index: 2; /* Certifique-se de que esta linha esteja presente e configurada corretamente */
         }
         .draggable-textbox {
             position: absolute;
@@ -400,6 +400,7 @@
                 elements.forEach(el => el.style.zIndex = 0);
             } else {
                 elements.forEach((el, index) => el.style.zIndex = originalZIndices[index]);
+                quadroImage.style.zIndex = 2; // Garante que o quadro de distribuição fique sempre atrás
             }
         });
 
