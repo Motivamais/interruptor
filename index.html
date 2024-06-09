@@ -117,7 +117,7 @@
             top: 500px;
             left: 50%;
             transform: translateX(0%);
-            z-index: 4; /* Garante que o disjuntor fique na frente do quadro */
+            z-index: 4; 
         }
         #lampButton {
             position: absolute;
@@ -154,7 +154,6 @@
             transform: translateX(0%);
             width: 500px;
             height: 500px;
-            z-index: 1; /* Certifique-se de que esta linha esteja presente e configurada corretamente */
         }
         .draggable-textbox {
             position: absolute;
@@ -306,24 +305,8 @@
         elementList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 const elementId = e.target.getAttribute('data-element');
-                const originalElement = document.getElementById(elementId);
-                const newElement = originalElement.cloneNode(true);
-
-                // Assegure que os novos elementos tenham as mesmas dimensões e estilo dos originais
-                newElement.style.position = 'absolute';
-                newElement.style.top = `${parseInt(originalElement.style.top) + 10}px`;
-                newElement.style.left = `${parseInt(originalElement.style.left) + 10}px`;
-                newElement.style.width = originalElement.style.width;
-                newElement.style.height = originalElement.style.height;
-                newElement.style.zIndex = originalElement.style.zIndex;
-
-                // Assegure que o ID seja único
-                newElement.id = elementId + Date.now();
-
-                // Torne o novo elemento visível e arrastável
-                newElement.style.display = 'block';
-                drawingArea.appendChild(newElement);
-                makeDraggable(newElement); // Torna o novo elemento arrastável
+                const element = document.getElementById(elementId);
+                element.style.display = element.style.display === 'none' ? 'block' : 'none';
             }
         });
 
