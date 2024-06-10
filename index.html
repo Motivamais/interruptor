@@ -156,7 +156,7 @@
             left: 50%;
             transform: translateX(0%);
             width: 500px;
-            height: 900px;
+            height: 500px;
             z-index: 0;
         }
         .draggable-textbox {
@@ -332,61 +332,29 @@
             }
         });
 
-        lampButton.addEventListener('click', () => {
-            lampOn = !lampOn;
-            if (lampOn) {
-                lampImageOn.style.display = 'block';
-                synchronizeLampPositions();
-                lampImage.style.display = 'none';
-            } else {
-                lampImage.style.display = 'block';
-                synchronizeLampPositions();
-                lampImageOn.style.display = 'none';
-            }
-        });
-
-        treeway1Image1.addEventListener('click', () => {
-            treeway1Image1Rotated = !treeway1Image1Rotated;
-            updateTreewayRotation();
-            toggleLamp();
-        });
-
-        treeway1Image2.addEventListener('click', () => {
-            treeway1Image2Rotated = !treeway1Image2Rotated;
-            updateTreewayRotation();
-            toggleLamp();
-        });
-
-        forwayImage.addEventListener('click', () => {
-            lampOn = !lampOn;
-            if (lampOn) {
-                lampImageOn.style.display = 'block';
-                synchronizeLampPositions();
-                lampImage.style.display = 'none';
-            } else {
-                lampImage.style.display = 'block';
-                synchronizeLampPositions();
-                lampImageOn.style.display = 'none';
-            }
-        });
-
-        function updateTreewayRotation() {
-            treeway1Image1.style.transform = treeway1Image1Rotated ? 'translateX(0%) scaleX(-1)' : 'translateX(0%) scaleX(-1)';
-            treeway1Image2.style.transform = treeway1Image2Rotated ? 'translateX(0%) scaleX(1)' : 'translateX(0%) scaleX(1)';
+        function addLampClickEvent(lamp, lampOn) {
+            lamp.addEventListener('click', () => {
+                const isOn = lamp.getAttribute('data-on') === 'true';
+                lampOn.style.display = isOn ? 'none' : 'block';
+                lamp.style.display = isOn ? 'block' : 'none';
+                lamp.setAttribute('data-on', !isOn);
+            });
         }
 
-        function toggleLamp() {
-            lampOn = !lampOn;
-            if (lampOn) {
-                lampImageOn.style.display = 'block';
-                synchronizeLampPositions();
-                lampImage.style.display = 'none';
-            } else {
-                lampImage.style.display = 'block';
-                synchronizeLampPositions();
-                lampImageOn.style.display = 'none';
-            }
+        function addSwitchClickEvent(switchElement, lamp, lampOn) {
+            switchElement.addEventListener('click', () => {
+                const isOn = lamp.getAttribute('data-on') === 'true';
+                lampOn.style.display = isOn ? 'none' : 'block';
+                lamp.style.display = isOn ? 'block' : 'none';
+                lamp.setAttribute('data-on', !isOn);
+            });
         }
+
+        // Adicionar eventos de clique aos elementos
+        addLampClickEvent(lampImage, lampImageOn);
+        addSwitchClickEvent(disjuntorImage, lampImage, lampImageOn);
+        addSwitchClickEvent(treeway1Image1, lampImage, lampImageOn);
+        addSwitchClickEvent(treeway1Image2, lampImage, lampImageOn);
 
         toggleDraggableButton.addEventListener('click', () => {
             draggable = !draggable;
@@ -585,8 +553,12 @@
         }
 
         function synchronizeLampPositions() {
-            lampImageOn.style.top = lampImage.style.top;
-            lampImageOn.style.left = lampImage.style.left;
+            const lamps = document.querySelectorAll('[data-lamp="true"]');
+            lamps.forEach(lamp => {
+                const lampOn = document.getElementById(lamp.getAttribute('data-lamp-on-id'));
+                lampOn.style.top = lamp.style.top;
+                lampOn.style.left = lamp.style.left;
+            });
         }
 
         // Função para abrir o menu
@@ -687,10 +659,26 @@
                 clone.style.top = `${parseInt(lastSelectedElement.style.top) + 10}px`;
                 drawingArea.appendChild(clone);
                 makeDraggable(clone);
+
+                if (clone.tagName === 'IMG' && clone.getAttribute('alt') === 'Lâmpada') {
+                    const lampOnClone = lampImageOn.cloneNode(true);
+                    lampOnClone.id = `lampOnClone${Date.now()}`;
+                    lampOnClone.style.display = clone.getAttribute('data-on') === 'true' ? 'block' : 'none';
+                    clone.setAttribute('data-lamp', 'true');
+                    clone.setAttribute('data-lamp-on-id', lampOnClone.id);
+                    drawingArea.appendChild(lampOnClone);
+                    makeDraggable(lampOnClone);
+                    addLampClickEvent(clone, lampOnClone);
+                }
+
+                if (clone.getAttribute('alt') === 'Disjuntor' || clone.getAttribute('alt').includes('Treeway')) {
+                    const correspondingLamp = document.querySelector(`[data-lamp-on-id="${lampImageOn.id}"]`);
+                    addSwitchClickEvent(clone, lampImage, lampImageOn);
+                }
+
                 lastSelectedElement = clone;
             }
         });
-
     </script>
 </body>
 </html>
