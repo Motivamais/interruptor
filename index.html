@@ -1,449 +1,696 @@
-<a id="duplicateButton">Duplicar</a>
-<script>
-    let drawing = false;
-    let selecting = false;
-    let startX, startY, endX, endY;
-    let wireColor = 'black';  // Cor inicial
-    let wireWidth = 2;
-    let lampOn = false;
-    let draggable = true;
-    const colors = ['black', 'blue', 'green'];
-    const drawingArea = document.getElementById('drawingArea');
-    const toggleColorButton = document.getElementById('toggleColorButton');
-    const wireWidthButton = document.getElementById('wireWidthButton');
-    const wireWidthContainer = document.getElementById('wireWidthContainer');
-    const lampImage = document.getElementById('lampImage');
-    const lampImageOn = document.getElementById('lampImageOn');
-    const bocalImage = document.getElementById('bocalImage');
-    const disjuntorImage = document.getElementById('disjuntorImage');
-    const treeway1Image1 = document.getElementById('treeway1Image1');
-    const treeway1Image2 = document.getElementById('treeway1Image2');
-    const forwayImage = document.getElementById('forwayImage');
-    const quadroImage = document.getElementById('quadroImage');
-    const resetButton = document.getElementById('resetButton');
-    const undoButton = document.getElementById('undoButton');
-    const lampButton = document.getElementById('lampButton');
-    const toggleDraggableButton = document.getElementById('toggleDraggableButton');
-    const continuousLineButton = document.getElementById('continuousLineButton');
-    const elementsButton = document.getElementById('elementsButton');
-    const elementList = document.getElementById('elementList');
-    const duplicateButton = document.getElementById('duplicateButton');
-    let selectedLines = [];
-    let selectionRectangle = null;
-    let actions = [];
-    let currentWire = null;
-    let firstClickElement = null;
-    let menuOpen = false;
-    let isDraggingLine = false;
-    let dragStartX, dragStartY;
-    let continuousLineMode = false;
-    let treeway1Image1Rotated = false;
-    let treeway1Image2Rotated = false;
-    let lastSelectedElement = null;
-
-    // Definindo variáveis para os elementos e seus z-indices originais
-    let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2, forwayImage, quadroImage];
-    let originalZIndices = elements.map(el => el.style.zIndex);
-
-    document.getElementById('menuButton').addEventListener('click', () => {
-        if (menuOpen) {
-            closeMenu();
-        } else {
-            openMenu();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desenhar Fios</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #90EE90;
+            position: relative;
         }
-    });
-
-    continuousLineButton.addEventListener('click', () => {
-        continuousLineMode = !continuousLineMode;
-        continuousLineButton.style.backgroundColor = continuousLineMode ? '#575757' : '#333';
-        continuousLineButton.style.color = continuousLineMode ? '#ffffff' : '#ffffff';
-    });
-
-    elementsButton.addEventListener('click', () => {
-        elementList.style.display = elementList.style.display === 'block' ? 'none' : 'block';
-    });
-
-    elementList.addEventListener('click', (e) => {
-        if (e.target.tagName === 'LI') {
-            const elementId = e.target.getAttribute('data-element');
-            const element = document.getElementById(elementId);
-            element.style.display = element.style.display === 'none' ? 'block' : 'none';
+        #drawingArea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            z-index: 1;
         }
-    });
-
-    toggleColorButton.addEventListener('click', () => {
-        const currentColorIndex = colors.indexOf(wireColor);
-        wireColor = colors[(currentColorIndex + 1) % colors.length];
-        toggleColorButton.style.backgroundColor = wireColor;
-        toggleColorButton.style.color = wireColor === 'black' ? '#ffffff' : '#000000';
-    });
-
-    wireWidthButton.addEventListener('click', () => {
-        if (wireWidthContainer.style.display === 'none') {
-            wireWidthContainer.style.display = 'block';
-        } else {
-            wireWidthContainer.style.display = 'none';
+        .wire {
+            position: absolute;
+            z-index: 10; /* Garantir que as linhas fiquem acima dos outros elementos */
         }
-    });
-
-    lampButton.addEventListener('click', () => {
-        lampOn = !lampOn;
-        if (lampOn) {
-            lampImageOn.style.display = 'block';
-            synchronizeLampPositions();
-            lampImage.style.display = 'none';
-        } else {
-            lampImage.style.display = 'block';
-            synchronizeLampPositions();
-            lampImageOn.style.display = 'none';
+        .selection-rectangle {
+            position: absolute;
+            border: 2px dashed #000;
+            background-color: rgba(0, 0, 0, 0.1);
+            z-index: 2;
         }
-    });
-
-    treeway1Image1.addEventListener('click', () => {
-        treeway1Image1Rotated = !treeway1Image1Rotated;
-        updateTreewayRotation();
-        toggleLamp();
-    });
-
-    treeway1Image2.addEventListener('click', () => {
-        treeway1Image2Rotated = !treeway1Image2Rotated;
-        updateTreewayRotation();
-        toggleLamp();
-    });
-
-    forwayImage.addEventListener('click', () => {
-        lampOn = !lampOn;
-        if (lampOn) {
-            lampImageOn.style.display = 'block';
-            synchronizeLampPositions();
-            lampImage.style.display = 'none';
-        } else {
-            lampImage.style.display = 'block';
-            synchronizeLampPositions();
-            lampImageOn.style.display = 'none';
+        .menu {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            overflow-x: hidden;
+            transition: 0.5s;
+            transform: translateX(-100%);
+            z-index: 10;
         }
-    });
-
-    function updateTreewayRotation() {
-        treeway1Image1.style.transform = treeway1Image1Rotated ? 'translateX(0%) scaleX(-1)' : 'translateX(0%) scaleX(-1)';
-        treeway1Image2.style.transform = treeway1Image2Rotated ? 'translateX(0%) scaleX(1)' : 'translateX(0%) scaleX(1)';
-    }
-
-    function toggleLamp() {
-        lampOn = !lampOn;
-        if (lampOn) {
-            lampImageOn.style.display = 'block';
-            synchronizeLampPositions();
-            lampImage.style.display = 'none';
-        } else {
-            lampImage.style.display = 'block';
-            synchronizeLampPositions();
-            lampImageOn.style.display = 'none';
+        .menu a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 22px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+            cursor: pointer;
         }
-    }
+        .menu a:hover {
+            background-color: #575757;
+        }
+        .menu .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+        #menuButton {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        #wireWidthContainer {
+            display: none;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #wireWidthContainer label {
+            color: white;
+        }
+        #lampImage, #lampImageOn, #bocalImage, #disjuntorImage, #treeway1Image1, #treeway1Image2, #forwayImage, #quadroImage {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            cursor: grab;
+            z-index: 3;
+            display: none;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+        #lampImage {
+            top: 150px;
+            left: 50%;
+            transform: translateX(0%) scaleY(-1);
+        }
+        #lampImageOn {
+            display: none;
+            z-index: 4;
+            top: 150px;
+            left: 50%;
+            transform: translateX(0%) scaleY(-1);
+        }
+        #bocalImage {
+            top: 350px;
+            left: 50%;
+            transform: translateX(0%);
+        }
+        #disjuntorImage {
+            top: 500px;
+            left: 50%;
+            transform: translateX(0%);
+            z-index: 5;
+            width: 40px;
+            height: 100px;
+        }
+        #lampButton {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(0%) scaleX(-1);
+            width: 300px;
+            height: 300px;
+            background: url('button-image.png') no-repeat center center;
+            background-size: cover;
+            border: none;
+            cursor: grab;
+            z-index: 3;
+            display: none;
+        }
+        #treeway1Image1 {
+            top: 650px;
+            left: 50%;
+            transform: translateX(0%) scaleX(1);
+        }
+        #treeway1Image2 {
+            top: 800px;
+            left: 50%;
+            transform: translateX(0%) scaleX(-1);
+        }
+        #forwayImage {
+            top: 950px;
+            left: 50%;
+            transform: translateX(0%) scaleX(1);
+        }
+        #quadroImage {
+            top: 1100px;
+            left: 50%;
+            transform: translateX(0%);
+            width: 500px;
+            height: 500px;
+            z-index: 0;
+        }
+        .draggable-textbox {
+            position: absolute;
+            top: 200px;
+            left: 50px;
+            width: 150px;
+            padding: 5px;
+            z-index: 3;
+            cursor: grab;
+            border: 1px solid #333;
+            background-color: #ccc;
+            resize: both;
+            overflow: auto;
+        }
+        .draggable-textbox:nth-child(2) {
+            top: 300px;
+            left: 50px;
+        }
+        .draggable-textbox:nth-child(3) {
+            top: 400px;
+            left: 50px;
+        }
+        .draggable-textbox.large {
+            width: 300px;
+            font-size: 1.2em;
+        }
+        .element-list {
+            display: none;
+            background-color: #444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .element-list li {
+            cursor: pointer;
+            padding: 5px 0;
+        }
+        .element-list li:hover {
+            background-color: #575757;
+        }
+    </style>
+</head>
+<body>
+    <button id="menuButton">Menu</button>
+    <div id="menu" class="menu">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">&times;</a>
+        <a id="toggleColorButton">Trocar Cor</a>
+        <a id="wireWidthButton">Largura do Fio</a>
+        <div id="wireWidthContainer">
+            <label for="wireWidth">Largura do Fio:</label>
+            <input type="range" id="wireWidth" name="wireWidth" min="1" max="10" value="2">
+        </div>
+        <a id="resetButton">Resetar</a>
+        <a id="undoButton">Voltar</a>
+        <a id="toggleDraggableButton">Arrastável</a>
+        <a id="continuousLineButton">Linha Contínua</a>
+        <a id="elementsButton">Elementos</a>
+        <ul id="elementList" class="element-list">
+            <li data-element="lampImage">Lâmpada</li>
+            <li data-element="lampImageOn">Lâmpada Acesa</li>
+            <li data-element="bocalImage">Bocal</li>
+            <li data-element="disjuntorImage">Disjuntor</li>
+            <li data-element="lampButton">Botão</li>
+            <li data-element="treeway1Image1">Treeway1 (1)</li>
+            <li data-element="treeway1Image2">Treeway1 (2)</li>
+            <li data-element="forwayImage">Forway</li>
+            <li data-element="quadroImage">Quadro</li>
+        </ul>
+        <a id="duplicateButton">Duplicar</a> <!-- Adicione este botão -->
+    </div>
+    <div id="drawingArea"></div>
+    <img id="lampImage" src="lamp-off.png" alt="Lâmpada">
+    <img id="lampImageOn" src="lamp-on.png" alt="Lâmpada Acesa">
+    <img id="bocalImage" src="bocal.png" alt="Bocal">
+    <img id="disjuntorImage" src="disjuntor.png" alt="Disjuntor">
+    <img id="treeway1Image1" src="treeway1.png" alt="Treeway1 Image 1">
+    <img id="treeway1Image2" src="treeway1.png" alt="Treeway1 Image 2">
+    <img id="forwayImage" src="forway.png" alt="Forway Image">
+    <img id="quadroImage" src="quadro.png" alt="Quadro">
+    <button id="lampButton"></button>
+    <input type="text" class="draggable-textbox" value="Caixa de texto 1">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 2">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 3">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 4">
+    <input type="text" class="draggable-textbox" value="Caixa de texto 5">
+    <input type="text" class="draggable-textbox large" value="Título do Projeto" id="titleBox">
 
-    toggleDraggableButton.addEventListener('click', () => {
-        draggable = !draggable;
-        const cursorStyle = draggable ? 'grab' : 'crosshair';
-        lampImage.style.cursor = cursorStyle;
-        lampImageOn.style.cursor = cursorStyle;
-        bocalImage.style.cursor = cursorStyle;
-        disjuntorImage.style.cursor = cursorStyle;
-        treeway1Image1.style.cursor = cursorStyle;
-        treeway1Image2.style.cursor = cursorStyle;
-        forwayImage.style.cursor = cursorStyle;
-        quadroImage.style.cursor = cursorStyle;
-        document.querySelectorAll('.draggable-textbox').forEach(element => {
-            element.style.cursor = cursorStyle;
+    <script>
+        let drawing = false;
+        let selecting = false;
+        let startX, startY, endX, endY;
+        let wireColor = 'black';  // Cor inicial
+        let wireWidth = 2;
+        let lampOn = false;
+        let draggable = true;
+        const colors = ['black', 'blue', 'green'];
+        const drawingArea = document.getElementById('drawingArea');
+        const toggleColorButton = document.getElementById('toggleColorButton');
+        const wireWidthButton = document.getElementById('wireWidthButton');
+        const wireWidthContainer = document.getElementById('wireWidthContainer');
+        const lampImage = document.getElementById('lampImage');
+        const lampImageOn = document.getElementById('lampImageOn');
+        const bocalImage = document.getElementById('bocalImage');
+        const disjuntorImage = document.getElementById('disjuntorImage');
+        const treeway1Image1 = document.getElementById('treeway1Image1');
+        const treeway1Image2 = document.getElementById('treeway1Image2');
+        const forwayImage = document.getElementById('forwayImage');
+        const quadroImage = document.getElementById('quadroImage');
+        const resetButton = document.getElementById('resetButton');
+        const undoButton = document.getElementById('undoButton');
+        const lampButton = document.getElementById('lampButton');
+        const toggleDraggableButton = document.getElementById('toggleDraggableButton');
+        const continuousLineButton = document.getElementById('continuousLineButton');
+        const elementsButton = document.getElementById('elementsButton');
+        const elementList = document.getElementById('elementList');
+        const duplicateButton = document.getElementById('duplicateButton');
+        let selectedLines = [];
+        let selectionRectangle = null;
+        let actions = [];
+        let currentWire = null;
+        let firstClickElement = null;
+        let menuOpen = false;
+        let isDraggingLine = false;
+        let dragStartX, dragStartY;
+        let continuousLineMode = false;
+        let treeway1Image1Rotated = false;
+        let treeway1Image2Rotated = false;
+        let lastSelectedElement = null;
+
+        // Definindo variáveis para os elementos e seus z-indices originais
+        let elements = [lampButton, lampImage, lampImageOn, bocalImage, disjuntorImage, treeway1Image1, treeway1Image2, forwayImage, quadroImage];
+        let originalZIndices = elements.map(el => el.style.zIndex);
+
+        document.getElementById('menuButton').addEventListener('click', () => {
+            if (menuOpen) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
         });
 
-        if (!draggable) {
-            elements.forEach(el => el.style.zIndex = 0);
-        } else {
-            elements.forEach((el, index) => el.style.zIndex = originalZIndices[index]);
-        }
+        continuousLineButton.addEventListener('click', () => {
+            continuousLineMode = !continuousLineMode;
+            continuousLineButton.style.backgroundColor = continuousLineMode ? '#575757' : '#333';
+            continuousLineButton.style.color = continuousLineMode ? '#ffffff' : '#ffffff';
+        });
 
-        // Garante que o quadro de distribuição fique sempre atrás do disjuntor
-        quadroImage.style.zIndex = 0;
-        disjuntorImage.style.zIndex = 5;
-         wireImage.style.zIndex = 10;
-    });
+        elementsButton.addEventListener('click', () => {
+            elementList.style.display = elementList.style.display === 'block' ? 'none' : 'block';
+        });
 
-    resetButton.addEventListener('click', () => {
-        drawingArea.innerHTML = '';
-        actions = [];
-    });
+        elementList.addEventListener('click', (e) => {
+            if (e.target.tagName === 'LI') {
+                const elementId = e.target.getAttribute('data-element');
+                const element = document.getElementById(elementId);
+                element.style.display = element.style.display === 'none' ? 'block' : 'none';
+            }
+        });
 
-    undoButton.addEventListener('click', () => {
-        if (actions.length > 0) {
-            const lastAction = actions.pop();
-            lastAction.remove();
-        }
-    });
+        toggleColorButton.addEventListener('click', () => {
+            const currentColorIndex = colors.indexOf(wireColor);
+            wireColor = colors[(currentColorIndex + 1) % colors.length];
+            toggleColorButton.style.backgroundColor = wireColor;
+            toggleColorButton.style.color = wireColor === 'black' ? '#ffffff' : '#000000';
+        });
 
-    document.getElementById('wireWidth').addEventListener('input', (e) => {
-        wireWidth = e.target.value;
-    });
-
-    drawingArea.addEventListener('mousedown', (e) => {
-        if (e.button === 0) { // Botão esquerdo do mouse
-            if (continuousLineMode) {
-                // Inicia o arrasto para desenhar uma linha contínua
-                isDraggingLine = true;
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-
-                currentWire = document.createElement('div');
-                currentWire.classList.add('wire');
-                currentWire.style.backgroundColor = wireColor;
-                currentWire.style.height = `${wireWidth}px`;
-                currentWire.style.position = 'absolute';
-                drawingArea.appendChild(currentWire);
+        wireWidthButton.addEventListener('click', () => {
+            if (wireWidthContainer.style.display === 'none') {
+                wireWidthContainer.style.display = 'block';
             } else {
-                if (firstClickElement) {
-                    secondClick(e);
-                } else {
-                    if (e.shiftKey) {
-                        // Inicia o arrasto para desenhar uma linha reta
-                        isDraggingLine = true;
-                        dragStartX = e.clientX;
-                        dragStartY = e.clientY;
+                wireWidthContainer.style.display = 'none';
+            }
+        });
 
-                        currentWire = document.createElement('div');
-                        currentWire.classList.add('wire');
-                        currentWire.style.backgroundColor = wireColor;
-                        currentWire.style.height = `${wireWidth}px`;
-                        currentWire.style.position = 'absolute';
-                        drawingArea.appendChild(currentWire);
+        lampButton.addEventListener('click', () => {
+            lampOn = !lampOn;
+            if (lampOn) {
+                lampImageOn.style.display = 'block';
+                synchronizeLampPositions();
+                lampImage.style.display = 'none';
+            } else {
+                lampImage.style.display = 'block';
+                synchronizeLampPositions();
+                lampImageOn.style.display = 'none';
+            }
+        });
+
+        treeway1Image1.addEventListener('click', () => {
+            treeway1Image1Rotated = !treeway1Image1Rotated;
+            updateTreewayRotation();
+            toggleLamp();
+        });
+
+        treeway1Image2.addEventListener('click', () => {
+            treeway1Image2Rotated = !treeway1Image2Rotated;
+            updateTreewayRotation();
+            toggleLamp();
+        });
+
+        forwayImage.addEventListener('click', () => {
+            lampOn = !lampOn;
+            if (lampOn) {
+                lampImageOn.style.display = 'block';
+                synchronizeLampPositions();
+                lampImage.style.display = 'none';
+            } else {
+                lampImage.style.display = 'block';
+                synchronizeLampPositions();
+                lampImageOn.style.display = 'none';
+            }
+        });
+
+        function updateTreewayRotation() {
+            treeway1Image1.style.transform = treeway1Image1Rotated ? 'translateX(0%) scaleX(-1)' : 'translateX(0%) scaleX(-1)';
+            treeway1Image2.style.transform = treeway1Image2Rotated ? 'translateX(0%) scaleX(1)' : 'translateX(0%) scaleX(1)';
+        }
+
+        function toggleLamp() {
+            lampOn = !lampOn;
+            if (lampOn) {
+                lampImageOn.style.display = 'block';
+                synchronizeLampPositions();
+                lampImage.style.display = 'none';
+            } else {
+                lampImage.style.display = 'block';
+                synchronizeLampPositions();
+                lampImageOn.style.display = 'none';
+            }
+        }
+
+        toggleDraggableButton.addEventListener('click', () => {
+            draggable = !draggable;
+            const cursorStyle = draggable ? 'grab' : 'crosshair';
+            lampImage.style.cursor = cursorStyle;
+            lampImageOn.style.cursor = cursorStyle;
+            bocalImage.style.cursor = cursorStyle;
+            disjuntorImage.style.cursor = cursorStyle;
+            treeway1Image1.style.cursor = cursorStyle;
+            treeway1Image2.style.cursor = cursorStyle;
+            forwayImage.style.cursor = cursorStyle;
+            quadroImage.style.cursor = cursorStyle;
+            document.querySelectorAll('.draggable-textbox').forEach(element => {
+                element.style.cursor = cursorStyle;
+            });
+
+            if (!draggable) {
+                elements.forEach(el => el.style.zIndex = 0);
+            } else {
+                elements.forEach((el, index) => el.style.zIndex = originalZIndices[index]);
+            }
+
+            // Garante que o quadro de distribuição fique sempre atrás do disjuntor
+            quadroImage.style.zIndex = 0;
+            disjuntorImage.style.zIndex = 5;
+        });
+
+        resetButton.addEventListener('click', () => {
+            drawingArea.innerHTML = '';
+            actions = [];
+        });
+
+        undoButton.addEventListener('click', () => {
+            if (actions.length > 0) {
+                const lastAction = actions.pop();
+                lastAction.remove();
+            }
+        });
+
+        document.getElementById('wireWidth').addEventListener('input', (e) => {
+            wireWidth = e.target.value;
+        });
+
+        drawingArea.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { // Botão esquerdo do mouse
+                if (continuousLineMode) {
+                    // Inicia o arrasto para desenhar uma linha contínua
+                    isDraggingLine = true;
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+
+                    currentWire = document.createElement('div');
+                    currentWire.classList.add('wire');
+                    currentWire.style.backgroundColor = wireColor;
+                    currentWire.style.height = `${wireWidth}px`;
+                    currentWire.style.position = 'absolute';
+                    drawingArea.appendChild(currentWire);
+                } else {
+                    if (firstClickElement) {
+                        secondClick(e);
                     } else {
-                        firstClick(e);
+                        if (e.shiftKey) {
+                            // Inicia o arrasto para desenhar uma linha reta
+                            isDraggingLine = true;
+                            dragStartX = e.clientX;
+                            dragStartY = e.clientY;
+
+                            currentWire = document.createElement('div');
+                            currentWire.classList.add('wire');
+                            currentWire.style.backgroundColor = wireColor;
+                            currentWire.style.height = `${wireWidth}px`;
+                            currentWire.style.position = 'absolute';
+                            drawingArea.appendChild(currentWire);
+                        } else {
+                            firstClick(e);
+                        }
                     }
                 }
+            } else if (e.button === 2) { // Botão direito do mouse
+                e.preventDefault();
+                selecting = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                selectionRectangle = document.createElement('div');
+                selectionRectangle.classList.add('selection-rectangle');
+                selectionRectangle.style.left = `${startX}px`;
+                selectionRectangle.style.top = `${startY}px`;
+                drawingArea.appendChild(selectionRectangle);
             }
-        } else if (e.button === 2) { // Botão direito do mouse
-            e.preventDefault();
-            selecting = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            selectionRectangle = document.createElement('div');
-            selectionRectangle.classList.add('selection-rectangle');
-            selectionRectangle.style.left = `${startX}px`;
-            selectionRectangle.style.top = `${startY}px`;
-            drawingArea.appendChild(selectionRectangle);
-        }
-    });
+        });
 
-    drawingArea.addEventListener('mousemove', (e) => {
-        if (isDraggingLine && currentWire) {
-            const currentX = e.clientX;
-            const currentY = e.clientY;
-            if (continuousLineMode) {
-                const deltaX = currentX - dragStartX;
-                const deltaY = currentY - dragStartY;
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
-                    currentWire.style.height = `${wireWidth}px`;
-                    currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
-                    currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
-                } else {
-                    if (Math.abs(deltaX) === Math.abs(deltaY)) {
-                        // 45 graus
-                        currentWire.style.width = `${Math.abs(deltaX)}px`;
-                        currentWire.style.height = `${Math.abs(deltaY)}px`;
+        drawingArea.addEventListener('mousemove', (e) => {
+            if (isDraggingLine && currentWire) {
+                const currentX = e.clientX;
+                const currentY = e.clientY;
+                if (continuousLineMode) {
+                    const deltaX = currentX - dragStartX;
+                    const deltaY = currentY - dragStartY;
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
+                        currentWire.style.height = `${wireWidth}px`;
                         currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
-                        currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
+                        currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
                     } else {
-                        // Vertical
+                        if (Math.abs(deltaX) === Math.abs(deltaY)) {
+                            // 45 graus
+                            currentWire.style.width = `${Math.abs(deltaX)}px`;
+                            currentWire.style.height = `${Math.abs(deltaY)}px`;
+                            currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
+                            currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
+                        } else {
+                            // Vertical
+                            currentWire.style.width = `${wireWidth}px`;
+                            currentWire.style.height = `${Math.abs(currentY - dragStartY)}px`;
+                            currentWire.style.left = `${dragStartX - wireWidth / 2}px`;
+                            currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
+                        }
+                    }
+                } else {
+                    if (Math.abs(currentX - dragStartX) > Math.abs(currentY - dragStartY)) {
+                        currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
+                        currentWire.style.height = `${wireWidth}px`;
+                        currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
+                        currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
+                    } else {
                         currentWire.style.width = `${wireWidth}px`;
                         currentWire.style.height = `${Math.abs(currentY - dragStartY)}px`;
                         currentWire.style.left = `${dragStartX - wireWidth / 2}px`;
                         currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
                     }
                 }
-            } else {
-                if (Math.abs(currentX - dragStartX) > Math.abs(currentY - dragStartY)) {
-                    currentWire.style.width = `${Math.abs(currentX - dragStartX)}px`;
-                    currentWire.style.height = `${wireWidth}px`;
-                    currentWire.style.left = `${Math.min(dragStartX, currentX)}px`;
-                    currentWire.style.top = `${dragStartY - wireWidth / 2}px`;
-                } else {
-                    currentWire.style.width = `${wireWidth}px`;
-                    currentWire.style.height = `${Math.abs(currentY - dragStartY)}px`;
-                    currentWire.style.left = `${dragStartX - wireWidth / 2}px`;
-                    currentWire.style.top = `${Math.min(dragStartY, currentY)}px`;
+            } else if (selecting && selectionRectangle) {
+                const currentX = e.clientX;
+                const currentY = e.clientY;
+                selectionRectangle.style.width = `${Math.abs(currentX - startX)}px`;
+                selectionRectangle.style.height = `${Math.abs(currentY - startY)}px`;
+                selectionRectangle.style.left = `${Math.min(startX, currentX)}px`;
+                selectionRectangle.style.top = `${Math.min(startY, currentY)}px`;
+            }
+        });
+
+        drawingArea.addEventListener('mouseup', (e) => {
+            if (isDraggingLine && e.button === 0) {
+                isDraggingLine = false;
+                actions.push(currentWire);
+                currentWire = null;
+            } else if (selecting && e.button === 2) {
+                selecting = false;
+                if (selectionRectangle) {
+                    const rect = selectionRectangle.getBoundingClientRect();
+                    selectedLines = Array.from(document.querySelectorAll('.wire')).filter(wire => {
+                        const wireRect = wire.getBoundingClientRect();
+                        return !(rect.right < wireRect.left || rect.left > wireRect.right || rect.bottom < wireRect.top || rect.top > wireRect.bottom);
+                    });
+                    selectionRectangle.remove();
+                    selectionRectangle = null;
                 }
             }
-        } else if (selecting && selectionRectangle) {
-            const currentX = e.clientX;
-            const currentY = e.clientY;
-            selectionRectangle.style.width = `${Math.abs(currentX - startX)}px`;
-            selectionRectangle.style.height = `${Math.abs(currentY - startY)}px`;
-            selectionRectangle.style.left = `${Math.min(startX, currentX)}px`;
-            selectionRectangle.style.top = `${Math.min(startY, currentY)}px`;
-        }
-    });
+        });
 
-    drawingArea.addEventListener('mouseup', (e) => {
-        if (isDraggingLine && e.button === 0) {
-            isDraggingLine = false;
-            actions.push(currentWire);
-            currentWire = null;
-        } else if (selecting && e.button === 2) {
-            selecting = false;
-            if (selectionRectangle) {
-                const rect = selectionRectangle.getBoundingClientRect();
-                selectedLines = Array.from(document.querySelectorAll('.wire')).filter(wire => {
-                    const wireRect = wire.getBoundingClientRect();
-                    return !(rect.right < wireRect.left || rect.left > wireRect.right || rect.bottom < wireRect.top || rect.top > wireRect.bottom);
-                });
-                selectionRectangle.remove();
-                selectionRectangle = null;
-            }
-        }
-    });
-
-    drawingArea.addEventListener('dblclick', (e) => {
-        if (e.target.classList.contains('wire')) {
-            e.target.remove();
-        }
-    });
-
-    // Função para tornar um elemento arrastável
-    function makeDraggable(element) {
-        let isDragging = false;
-        let offsetX, offsetY;
-
-        element.addEventListener('mousedown', (e) => {
-            if (draggable && e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
-                isDragging = true;
-                offsetX = e.clientX - element.getBoundingClientRect().left;
-                offsetY = e.clientY - element.getBoundingClientRect().top;
-                element.style.cursor = 'grabbing';
-                lastSelectedElement = element;
+        drawingArea.addEventListener('dblclick', (e) => {
+            if (e.target.classList.contains('wire')) {
+                e.target.remove();
             }
         });
 
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                element.style.left = `${e.clientX - offsetX}px`;
-                element.style.top = `${e.clientY - offsetY}px`;
-                synchronizeLampPositions();
-            }
-        });
+        // Função para tornar um elemento arrastável
+        function makeDraggable(element) {
+            let isDragging = false;
+            let offsetX, offsetY;
 
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                element.style.cursor = 'grab';
-            }
-        });
-    }
+            element.addEventListener('mousedown', (e) => {
+                if (draggable && e.target !== drawingArea) { // Previne o início de arrastar enquanto desenha
+                    isDragging = true;
+                    offsetX = e.clientX - element.getBoundingClientRect().left;
+                    offsetY = e.clientY - element.getBoundingClientRect().top;
+                    element.style.cursor = 'grabbing';
+                    lastSelectedElement = element;
+                }
+            });
 
-    function synchronizeLampPositions() {
-        lampImageOn.style.top = lampImage.style.top;
-        lampImageOn.style.left = lampImage.style.left;
-    }
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    element.style.left = `${e.clientX - offsetX}px`;
+                    element.style.top = `${e.clientY - offsetY}px`;
+                    synchronizeLampPositions();
+                }
+            });
 
-    // Função para abrir o menu
-    function openMenu() {
-        document.getElementById('menu').style.transform = 'translateX(0)';
-        menuOpen = true;
-    }
-
-    // Função para fechar o menu
-    function closeMenu() {
-        document.getElementById('menu').style.transform = 'translateX(-100%)';
-        menuOpen = false;
-    }
-
-    function firstClick(e) {
-        firstClickElement = { x: e.clientX, y: e.clientY };
-    }
-
-    function secondClick(e) {
-        endX = e.clientX;
-        endY = e.clientY;
-
-        if (firstClickElement) {
-            drawRightAngleLine(firstClickElement.x, firstClickElement.y, endX, endY);
-            firstClickElement = null;
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                }
+            });
         }
-    }
 
-    function drawRightAngleLine(x1, y1, x2, y2) {
-        const midX = x1;
-        const midY = y2;
+        function synchronizeLampPositions() {
+            lampImageOn.style.top = lampImage.style.top;
+            lampImageOn.style.left = lampImage.style.left;
+        }
 
-        // Draw first segment (horizontal)
-        drawLineSegment(x1, y1, midX, y1);
-        // Draw second segment (vertical)
-        drawLineSegment(midX, y1, midX, midY);
-        // Draw third segment (horizontal)
-        drawLineSegment(midX, midY, x2, midY);
-    }
+        // Função para abrir o menu
+        function openMenu() {
+            document.getElementById('menu').style.transform = 'translateX(0)';
+            menuOpen = true;
+        }
 
-    function drawLineSegment(x1, y1, x2, y2) {
-        const segment = document.createElement('div');
-        segment.classList.add('wire');
-        segment.style.backgroundColor = wireColor;
-        segment.style.width = `${wireWidth}px`;
-        segment.style.height = `${wireWidth}px`;
-        segment.style.position = 'absolute';
-        segment.style.left = `${x1}px`;
-        segment.style.top = `${y1 - wireWidth / 2}px`;
+        // Função para fechar o menu
+        function closeMenu() {
+            document.getElementById('menu').style.transform = 'translateX(-100%)';
+            menuOpen = false;
+        }
 
-        if (x1 !== x2) {
-            segment.style.width = `${Math.abs(x2 - x1)}px`;
-            segment.style.height = `${wireWidth}px`;
-            segment.style.left = `${Math.min(x1, x2)}px`;
-            segment.style.top = `${y1 - wireWidth / 2}px`;
-        } else {
+        function firstClick(e) {
+            firstClickElement = { x: e.clientX, y: e.clientY };
+        }
+
+        function secondClick(e) {
+            endX = e.clientX;
+            endY = e.clientY;
+
+            if (firstClickElement) {
+                drawRightAngleLine(firstClickElement.x, firstClickElement.y, endX, endY);
+                firstClickElement = null;
+            }
+        }
+
+        function drawRightAngleLine(x1, y1, x2, y2) {
+            const midX = x1;
+            const midY = y2;
+
+            // Draw first segment (horizontal)
+            drawLineSegment(x1, y1, midX, y1);
+            // Draw second segment (vertical)
+            drawLineSegment(midX, y1, midX, midY);
+            // Draw third segment (horizontal)
+            drawLineSegment(midX, midY, x2, midY);
+        }
+
+        function drawLineSegment(x1, y1, x2, y2) {
+            const segment = document.createElement('div');
+            segment.classList.add('wire');
+            segment.style.backgroundColor = wireColor;
             segment.style.width = `${wireWidth}px`;
-            segment.style.height = `${Math.abs(y2 - y1)}px`;
-            segment.style.left = `${x1 - wireWidth / 2}px`;
-            segment.style.top = `${Math.min(y1, y2)}px`;
+            segment.style.height = `${wireWidth}px`;
+            segment.style.position = 'absolute';
+            segment.style.left = `${x1}px`;
+            segment.style.top = `${y1 - wireWidth / 2}px`;
+
+            if (x1 !== x2) {
+                segment.style.width = `${Math.abs(x2 - x1)}px`;
+                segment.style.height = `${wireWidth}px`;
+                segment.style.left = `${Math.min(x1, x2)}px`;
+                segment.style.top = `${y1 - wireWidth / 2}px`;
+            } else {
+                segment.style.width = `${wireWidth}px`;
+                segment.style.height = `${Math.abs(y2 - y1)}px`;
+                segment.style.left = `${x1 - wireWidth / 2}px`;
+                segment.style.top = `${Math.min(y1, y2)}px`;
+            }
+
+            drawingArea.appendChild(segment);
+            actions.push(segment);
         }
 
-        drawingArea.appendChild(segment);
-        actions.push(segment);
-    }
+        // Tornar a lâmpada, o bocal, o botão, o disjuntor, as imagens treeway1, forway e as caixas de texto arrastáveis
+        makeDraggable(lampImage);
+        makeDraggable(lampImageOn);
+        makeDraggable(bocalImage);
+        makeDraggable(disjuntorImage);
+        makeDraggable(lampButton);
+        makeDraggable(treeway1Image1);
+        makeDraggable(treeway1Image2);
+        makeDraggable(forwayImage);
+        makeDraggable(quadroImage);
+        document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
 
-    // Tornar a lâmpada, o bocal, o botão, o disjuntor, as imagens treeway1, forway e as caixas de texto arrastáveis
-    makeDraggable(lampImage);
-    makeDraggable(lampImageOn);
-    makeDraggable(bocalImage);
-    makeDraggable(disjuntorImage);
-    makeDraggable(lampButton);
-    makeDraggable(treeway1Image1);
-    makeDraggable(treeway1Image2);
-    makeDraggable(forwayImage);
-    makeDraggable(quadroImage);
-    document.querySelectorAll('.draggable-textbox').forEach(makeDraggable);
+        // Ajustar tamanho da caixa de título automaticamente
+        const titleBox = document.getElementById('titleBox');
+        titleBox.addEventListener('input', () => {
+            titleBox.style.width = 'auto';
+            titleBox.style.width = (titleBox.scrollWidth + 10) + 'px';
+        });
 
-    // Ajustar tamanho da caixa de título automaticamente
-    const titleBox = document.getElementById('titleBox');
-    titleBox.addEventListener('input', () => {
-        titleBox.style.width = 'auto';
-        titleBox.style.width = (titleBox.scrollWidth + 10) + 'px';
-    });
+        // Adicionar listener para mouseup no documento para parar o desenho ao soltar o botão do mouse fora da área de desenho
+        document.addEventListener('mouseup', (e) => {
+            if (drawing && e.button === 0) {
+                drawing = false;
+            }
+        });
 
-    // Adicionar listener para mouseup no documento para parar o desenho ao soltar o botão do mouse fora da área de desenho
-    document.addEventListener('mouseup', (e) => {
-        if (drawing && e.button === 0) {
-            drawing = false;
-        }
-    });
+        // Função para duplicar o último elemento selecionado
+        duplicateButton.addEventListener('click', () => {
+            if (lastSelectedElement) {
+                const clone = lastSelectedElement.cloneNode(true);
+                clone.style.left = `${parseInt(lastSelectedElement.style.left) + 10}px`;
+                clone.style.top = `${parseInt(lastSelectedElement.style.top) + 10}px`;
+                drawingArea.appendChild(clone);
+                makeDraggable(clone);
+                lastSelectedElement = clone;
+            }
+        });
 
-    // Função para duplicar o último elemento selecionado
-    duplicateButton.addEventListener('click', () => {
-        if (lastSelectedElement) {
-            const clone = lastSelectedElement.cloneNode(true);
-            clone.style.left = `${parseInt(lastSelectedElement.style.left) + 10}px`;
-            clone.style.top = `${parseInt(lastSelectedElement.style.top) + 10}px`;
-            drawingArea.appendChild(clone);
-            makeDraggable(clone);
-            lastSelectedElement = clone;
-        }
-    });
-
-</script>
+    </script>
+</body>
+</html>
